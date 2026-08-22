@@ -1,14 +1,13 @@
 <?php
 include 'bd.php';
+include 'dispositivos.php';
 session_start();
 
 if(isset($_SESSION['user_id'])){
     header('Location: dashboard.php');
     exit;
 }
-
 $error = null;
-
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $Correo = trim($_POST['Correo'] ?? '');
     $Contraseña = $_POST['Contraseña'] ?? '';
@@ -16,17 +15,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if(empty($Correo) || empty($Contraseña)){
         $error = 'Ingrese su correo y contraseña.';
     } else {
-        $stmt = $conexion->prepare('SELECT ID, Correo, Contraseña, Estado, Verificado, IDRol, intentos_fallidos, bloqueado_hasta FROM Usuarios WHERE Correo = :Correo LIMIT 1');
+        $stmt = $conexion->prepare('SELECT ID, Correo, Contraseña, Estado, Verificado, IDRol, intentos_fallidos, bloqueado_hasta, NumeroSesiones FROM Usuarios WHERE Correo = :Correo LIMIT 1');
         $stmt->execute([':Correo'=>$Correo]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if(!$user){
             $error = 'Credenciales inválidas.';
         } elseif($user['Estado'] != 1){
-            $error = 'Tu usuario está inactivo. Contacta al administrador.';
+            $error = 'Tu usuario está bloqueado';
         } elseif($user['Verificado'] != 1){
-            $error = 'Tu correo no está verificado. Revisa tu bandeja de entrada.';
+            $error = 'Tu correo no está verificado. Revisa tu correo electrónico.';
         } else {
+            if ($user['bloqueado_hasta'] && new DateTime() >= new DateTime($user['bloqueado_hasta'])) {
+                $upd = $conexion->prepare('UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE ID = :id');
+                $upd->execute([':id' => $user['ID']]);
+                $user['intentos_fallidos'] = 0;
+                $user['bloqueado_hasta'] = null;
+            }
+
             $bloqueado_hasta = $user['bloqueado_hasta'];
             if($bloqueado_hasta && new DateTime() < new DateTime($bloqueado_hasta)){
                 $error = 'Cuenta bloqueada. Intenta nuevamente después de ' . date('H:i', strtotime($bloqueado_hasta));
@@ -34,12 +40,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                 if(password_verify($Contraseña, $user['Contraseña'])){
                     $upd = $conexion->prepare('UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE ID = :id');
                     $upd->execute([':id'=>$user['ID']]);
-
+                    $limite = $user['NumeroSesiones'] ?? 2;
                     $stmt = $conexion->prepare('SELECT COUNT(*) as total FROM SesionesActivas WHERE IDUsuario = ? AND Estado = 1');
                     $stmt->execute([$user['ID']]);
                     $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-                    
-                    if($total >= 2){
+                    if($total >= $limite){
                         $stmt = $conexion->prepare('SELECT ID FROM SesionesActivas WHERE IDUsuario = ? AND Estado = 1 ORDER BY FechaInicio ASC LIMIT 1');
                         $stmt->execute([$user['ID']]);
                         $oldest = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -48,16 +53,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                             $upd->execute([$oldest['ID']]);
                         }
                     }
-
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $user['ID'];
                     $_SESSION['correo'] = $user['Correo'];
                     $_SESSION['rol'] = $user['IDRol'];
-
-                    // Crear nueva sesión activa
                     $token = bin2hex(random_bytes(32));
-                    $stmt = $conexion->prepare('INSERT INTO SesionesActivas (IDUsuario, TokenSesion, FechaInicio, Estado) VALUES (?, ?, NOW(), 1)');
-                    if($stmt->execute([$user['ID'], $token])){
+                    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
+                    $dispositivo = obtenerNombreDispositivo($userAgent); 
+                    $stmt = $conexion->prepare('INSERT INTO SesionesActivas (IDUsuario, TokenSesion, FechaInicio, Estado, Dispositivo) VALUES (?, ?, NOW(), 1, ?)');
+                    if($stmt->execute([$user['ID'], $token, $dispositivo])){
                         $_SESSION['session_id'] = $conexion->lastInsertId();
                         header('Location: dashboard.php');
                         exit;
@@ -66,8 +70,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     $intentos = $user['intentos_fallidos'] + 1;
                     $bloqueo = null;
                     if($intentos >= 3){
-                        $bloqueo = date('Y-m-d H:i:s', strtotime('+5 minutes'));
-                        $error = 'Has superado el número de intentos. Cuenta bloqueada por 5 minutos.';
+                        $bloqueo = date('Y-m-d H:i:s', strtotime('+3 minutes'));
+                        $error = 'Has superado el número de intentos. Cuenta bloqueada por 3 minutos.';
                     } else {
                         $error = 'Credenciales inválidas. Intento ' . $intentos . ' de 3.';
                     }

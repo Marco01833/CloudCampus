@@ -23,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'El correo ya está registrado.';
             } else {
                 $hash = password_hash($Contraseña, PASSWORD_BCRYPT);
-                $stmt = $conexion->prepare('INSERT INTO Usuarios (Correo, Contraseña, Estado, Verificado, IDRol, IDPlan) VALUES (:Correo, :pass, 1, 0, :IdRol, :IdPlan)');
+                // Se añade NumeroSesiones = 2 por defecto
+                $stmt = $conexion->prepare('INSERT INTO Usuarios (Correo, Contraseña, Estado, Verificado, IDRol, IDPlan, NumeroSesiones) VALUES (:Correo, :pass, 1, 0, :IdRol, :IdPlan, 2)');
                 $stmt->execute([
                     ':Correo' => $Correo,
                     ':pass'   => $hash,
