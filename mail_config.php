@@ -11,11 +11,11 @@ function crearMailer(): PHPMailer {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'solizperedo3@gmail.com';
-    $mail->Password = '';
+    $mail->Username = 'CORREO';
+    $mail->Password = 'CONTRA';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
     $mail->CharSet = 'UTF-8';
-    $mail->setFrom('solizperedo3@gmail.com', 'Cloud Campus');
+    $mail->setFrom('CORREO', 'Cloud Campus');
     return $mail;
 }
