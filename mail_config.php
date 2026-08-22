@@ -12,7 +12,7 @@ function crearMailer(): PHPMailer {
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'solizperedo3@gmail.com';
-    $mail->Password = 'cppd iiqq aliq dnyk';
+    $mail->Password = '';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
     $mail->CharSet = 'UTF-8';
