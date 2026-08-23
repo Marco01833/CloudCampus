@@ -7,11 +7,11 @@ $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $Correo = trim($_POST['Correo'] ?? '');
-    $Contraseña = $_POST['Contraseña'] ?? '';
+    $Contrasena = $_POST['Contrasena'] ?? '';
     $IdRol = 1; 
     $IdPlan = 1; 
 
-    if ($Correo === '' || $Contraseña === '') {
+    if ($Correo === '' || $Contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
     } elseif (!filter_var($Correo, FILTER_VALIDATE_EMAIL)) {
         $error = 'Correo electrónico inválido.';
@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->fetch()) {
                 $error = 'El correo ya está registrado.';
             } else {
-                $hash = password_hash($Contraseña, PASSWORD_BCRYPT);
+                $hash = password_hash($Contrasena, PASSWORD_BCRYPT);
                 // Se añade NumeroSesiones = 2 por defecto
-                $stmt = $conexion->prepare('INSERT INTO Usuarios (Correo, Contraseña, Estado, Verificado, IDRol, IDPlan, NumeroSesiones) VALUES (:Correo, :pass, 1, 0, :IdRol, :IdPlan, 2)');
+                $stmt = $conexion->prepare('INSERT INTO Usuarios (Correo, Contrasena, Estado, Verificado, IDRol, IDPlan, NumeroSesiones) VALUES (:Correo, :pass, 1, 0, :IdRol, :IdPlan, 2)');
                 $stmt->execute([
                     ':Correo' => $Correo,
                     ':pass'   => $hash,
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contraseña</label>
-                            <input type="password" name="Contraseña" class="form-control" required>
+                            <input type="password" name="Contrasena" class="form-control" required>
                         </div>
                         <button class="btn btn-primary" type="submit">Registrarme</button>
                         <a class="btn btn-link" href="index.php">¿Ya tienes cuenta? Inicia sesión</a>
