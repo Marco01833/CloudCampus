@@ -28,8 +28,8 @@ if($token === ''){
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $token = $_POST['token'] ?? '';
-    $pass1 = $_POST['Contraseña'] ?? '';
-    $pass2 = $_POST['Contraseña2'] ?? '';
+    $pass1 = $_POST['Contrasena'] ?? '';
+    $pass2 = $_POST['Contrasena2'] ?? '';
     if($pass1 === '' || $pass2 === ''){
         $error = 'Ingrese y confirme su nueva contraseña.';
     } elseif($pass1 !== $pass2){
@@ -77,11 +77,11 @@ include 'header.php';
                             <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
                             <div class="mb-3">
                                 <label class="form-label">Nueva contraseña</label>
-                                <input type="password" name="Contraseña" class="form-control" required>
+                                <input type="password" name="Contrasena" class="form-control" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Confirmar contraseña</label>
-                                <input type="password" name="Contraseña2" class="form-control" required>
+                                <input type="password" name="Contrasena2" class="form-control" required>
                             </div>
                             <button class="btn btn-primary" type="submit">Guardar</button>
                         </form>
