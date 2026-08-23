@@ -30,7 +30,7 @@ CREATE TABLE Cursos (
 
 CREATE TABLE Usuarios (
     ID INT AUTO_INCREMENT PRIMARY KEY,
-    Contraseña VARCHAR(255) NOT NULL,
+    Contrasena VARCHAR(255) NOT NULL,
     Correo VARCHAR(100) UNIQUE NOT NULL,
     Estado BOOLEAN DEFAULT 1,
     Verificado BOOLEAN DEFAULT 0,
@@ -152,7 +152,8 @@ CREATE TABLE restablecer_contrasena (
 ALTER TABLE Usuarios ADD COLUMN intentos_fallidos INT DEFAULT 0 AFTER Verificado;
 ALTER TABLE Usuarios ADD COLUMN bloqueado_hasta DATETIME NULL AFTER intentos_fallidos;
 
-
+ALTER TABLE SesionesActivas 
+ADD COLUMN Dispositivo VARCHAR(100) NULL AFTER TokenSesion;
 
 INSERT INTO Roles (ID, Nombre) VALUES
 (1, 'Usuario'), 
@@ -162,5 +163,5 @@ INSERT INTO Planes (ID, Nombre, Precio, DuracionDias, Descuento) VALUES
 (1, 'Basico', 0.00, NULL, 0.00),
 (2, 'Premium', 19.99, 30, 80);
 
-INSERT IGNORE INTO Usuarios (Correo, Contraseña, Estado, Verificado, IDRol, IDPlan)
+INSERT IGNORE INTO Usuarios (Correo, Contrasena, Estado, Verificado, IDRol, IDPlan)
 VALUES ('admin@gmail.com', '$2y$10$MO.YyljvwPgJh6.7XTC4h.MJNMr9EH0yRGlGF/6ZmMhBDnOWT.TIS', 1, 1, 2, 1);
