@@ -19,13 +19,5 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_PATH }}
           exclude: |
-            .git/**
-            .env
-            README.md
-            node_modules/**
-            .github/**
-            *.sql
-            composer.json
             mail_config.php
-            header.php
-            config.local.php
+            
