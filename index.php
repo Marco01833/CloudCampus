@@ -10,12 +10,12 @@ if(isset($_SESSION['user_id'])){
 $error = null;
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $Correo = trim($_POST['Correo'] ?? '');
-    $Contraseña = $_POST['Contraseña'] ?? '';
+    $Contrasena = $_POST['Contrasena'] ?? '';
     
-    if(empty($Correo) || empty($Contraseña)){
+    if(empty($Correo) || empty($Contrasena)){
         $error = 'Ingrese su correo y contraseña.';
     } else {
-        $stmt = $conexion->prepare('SELECT ID, Correo, Contraseña, Estado, Verificado, IDRol, intentos_fallidos, bloqueado_hasta, NumeroSesiones FROM Usuarios WHERE Correo = :Correo LIMIT 1');
+        $stmt = $conexion->prepare('SELECT ID, Correo, Contrasena, Estado, Verificado, IDRol, intentos_fallidos, bloqueado_hasta, NumeroSesiones FROM Usuarios WHERE Correo = :Correo LIMIT 1');
         $stmt->execute([':Correo'=>$Correo]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -37,7 +37,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             if($bloqueado_hasta && new DateTime() < new DateTime($bloqueado_hasta)){
                 $error = 'Cuenta bloqueada. Intenta nuevamente después de ' . date('H:i', strtotime($bloqueado_hasta));
             } else {
-                if(password_verify($Contraseña, $user['Contraseña'])){
+                if(password_verify($Contrasena, $user['Contrasena'])){
                     $upd = $conexion->prepare('UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE ID = :id');
                     $upd->execute([':id'=>$user['ID']]);
                     $limite = $user['NumeroSesiones'] ?? 2;
@@ -108,7 +108,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             </div>
             <div class="mb-3">
               <label class="form-label">Contraseña</label>
-              <input type="password" name="Contraseña" class="form-control" required>
+              <input type="password" name="Contrasena" class="form-control" required>
             </div>
             <button class="btn btn-primary" type="submit">Entrar</button>
             <a class="btn btn-link" href="registro.php">Registrarse</a>
