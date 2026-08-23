@@ -1,7 +1,16 @@
 <?php
-$url_base = "http://localhost/cloudcampus/"; 
+$protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+$host = $_SERVER['HTTP_HOST'];
+$url_base = $protocolo . "://" . $host . "/";
 
-if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
+if ($host === 'localhost' || $host === '127.0.0.1') {
+    $url_base = $protocolo . "://" . $host . "/cloudcampus/";
+} else {
+    $url_base = $protocolo . "://" . $host . "/";
+}
+if (session_status() !== PHP_SESSION_ACTIVE) { 
+    session_start(); 
+}
 ?>
 <!doctype html>
 <html lang="es">
@@ -21,10 +30,14 @@ if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
                 </li>
                 <?php if(isset($_SESSION['user_id'])): 
                     $id_usuario = $_SESSION['user_id'];
-                    $sentencia = $conexion->prepare("SELECT IDRol FROM Usuarios WHERE ID = :id");
-                    $sentencia->execute([':id' => $id_usuario]);
-                    $usuario = $sentencia->fetch(PDO::FETCH_ASSOC);
-                    $esAdmin = ($usuario && $usuario['IDRol'] == 2); 
+                    if(isset($conexion) && $conexion) {
+                        $sentencia = $conexion->prepare("SELECT IDRol FROM Usuarios WHERE ID = :id");
+                        $sentencia->execute([':id' => $id_usuario]);
+                        $usuario = $sentencia->fetch(PDO::FETCH_ASSOC);
+                        $esAdmin = ($usuario && $usuario['IDRol'] == 2); 
+                    } else {
+                        $esAdmin = false; 
+                    }
                     if($esAdmin): ?>
                         <!-- <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Roles/rol.php">Roles</a></li> -->
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Usuarios/usuarios.php">Usuarios</a></li>
