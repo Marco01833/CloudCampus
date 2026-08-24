@@ -20,3 +20,4 @@ jobs:
           server-dir: ./htdocs/
           exclude: |
             mail_config.php
+            bd.php
