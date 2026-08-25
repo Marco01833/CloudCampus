@@ -3,8 +3,6 @@ include("../bd.php");
 
 if(isset($_GET['txtID'])){
     $txtID = (int)$_GET['txtID'];
-
-    // Obtener información del archivo para eliminarlo físicamente
     $sentencia = $conexion->prepare("SELECT Archivo, Tipo FROM Contenido WHERE ID = :id");
     $sentencia->bindParam(":id", $txtID);
     $sentencia->execute();
@@ -27,7 +25,6 @@ if(isset($_GET['txtID'])){
     exit;
 }
 
-// Listar contenido con nombre del curso
 $sentencia = $conexion->prepare("
     SELECT c.*, cu.Nombre as CursoNombre 
     FROM Contenido c
