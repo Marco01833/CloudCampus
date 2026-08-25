@@ -60,7 +60,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     $token = bin2hex(random_bytes(32));
                     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
                     $dispositivo = obtenerNombreDispositivo($userAgent); 
-                    $stmt = $conexion->prepare('INSERT INTO SesionesActivas (IDUsuario, TokenSesion, FechaInicio, Estado, Dispositivo) VALUES (?, ?, NOW(), 1, ?)');
+                    $stmt = $conexion->prepare('INSERT INTO SesionesActivas (IDUsuario, TokenSesion, FechaInicio, Estado, Dispositivo) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 3 HOUR), 1, ?)');
                     if($stmt->execute([$user['ID'], $token, $dispositivo])){
                         $_SESSION['session_id'] = $conexion->lastInsertId();
                         header('Location: dashboard.php');
