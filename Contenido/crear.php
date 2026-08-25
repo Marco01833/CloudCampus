@@ -39,8 +39,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif($Tipo == 'enlace') {
         $Archivo = (isset($_POST['Archivo'])) ? trim($_POST['Archivo']) : '';
     }
-
-    // Validación básica
     if(empty($IDCurso) || empty($Titulo) || empty($Tipo) || ($Tipo != 'enlace' && empty($Archivo))) {
         $mensaje_error = "Todos los campos obligatorios deben ser completados.";
     } else {

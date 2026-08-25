@@ -9,7 +9,6 @@ if($_POST){
     $Imagen = (isset($_FILES["Imagen"]['name'])) ? $_FILES["Imagen"]['name'] : "";
 
     if($IDUsuario > 0){
-        // Verificar que el usuario sea profesor (opcional, pero el select ya filtra)
         $verificar = $conexion->prepare("SELECT ID FROM Cursos WHERE IDUsuario = :uid");
         $verificar->bindParam(":uid", $IDUsuario);
         $verificar->execute();
@@ -19,7 +18,6 @@ if($_POST){
     } else {
         $error = "Debe seleccionar un profesor.";
     }
-
     if(empty($error)){
         $sentencia = $conexion->prepare("INSERT INTO Cursos (IDUsuario, Nombre, Descripcion, Precio, Imagen)
                                          VALUES (:IDUsuario, :Nombre, :Descripcion, :Precio, :Imagen)");
@@ -38,7 +36,6 @@ if($_POST){
         } else {
             $nombreArchivo_imagen = "default.jpg";
         }
-
         $sentencia->bindParam(":Imagen", $nombreArchivo_imagen);
         $sentencia->execute();
 

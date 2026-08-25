@@ -24,7 +24,6 @@ if(isset($_GET["txtID"])){
         exit;
     }
 }
-
 if($_POST){
     $txtID = (isset($_POST["ID"])) ? (int)$_POST["ID"] : 0;
     $IDCurso = (isset($_POST["IDCurso"])) ? (int)$_POST["IDCurso"] : 0;
@@ -32,25 +31,19 @@ if($_POST){
     $Tipo = (isset($_POST["Tipo"])) ? $_POST["Tipo"] : "";
     $OrdenContenido = (isset($_POST["OrdenContenido"])) ? (int)$_POST["OrdenContenido"] : 0;
     $Bloqueado = (isset($_POST["Bloqueado"])) ? (int)$_POST["Bloqueado"] : 1;
-
-    // Obtener datos actuales para manejar archivos
     $sentencia = $conexion->prepare("SELECT Archivo, Tipo FROM Contenido WHERE ID = :id");
     $sentencia->bindParam(":id", $txtID);
     $sentencia->execute();
     $datos_actuales = $sentencia->fetch(PDO::FETCH_LAZY);
     $archivo_actual = $datos_actuales['Archivo'] ?? '';
     $tipo_anterior = $datos_actuales['Tipo'] ?? '';
-
     $Archivo = $archivo_actual;
-
-    // Si se cambia el tipo o se sube un nuevo archivo, eliminar el anterior si es archivo/video
     if ($Tipo != $tipo_anterior && ($tipo_anterior == 'video' || $tipo_anterior == 'archivo') && !empty($archivo_actual)) {
         $ruta_anterior = "./" . ($tipo_anterior == 'video' ? 'Video/' : 'Archivos/') . $archivo_actual;
         if (file_exists($ruta_anterior)) unlink($ruta_anterior);
-        $Archivo = ''; // Se limpiará al subir nuevo o asignar enlace
+        $Archivo = ''; 
     }
 
-    // Procesar nuevo archivo según tipo
     if ($Tipo == 'archivo') {
         if(isset($_FILES["archivo"]["name"]) && $_FILES["archivo"]["name"] != '') {
             $fecha = new DateTime();
@@ -59,18 +52,16 @@ if($_POST){
             $carpeta_archivos = "./Archivos/";
             if (!file_exists($carpeta_archivos)) mkdir($carpeta_archivos, 0755, true);
             if(move_uploaded_file($tmp_archivo, $carpeta_archivos . $nombre_archivo)) {
-                // Eliminar archivo anterior si existe y es diferente
                 if(!empty($archivo_actual) && $archivo_actual != $nombre_archivo && file_exists($carpeta_archivos . $archivo_actual)) {
                     unlink($carpeta_archivos . $archivo_actual);
                 }
                 $Archivo = $nombre_archivo;
             }
         } else {
-            // Si no se sube nuevo, mantener el anterior (si es del mismo tipo)
             if ($tipo_anterior == 'archivo' && !empty($archivo_actual)) {
                 $Archivo = $archivo_actual;
             } else {
-                $Archivo = ''; // No puede quedar vacío si es archivo, pero se validará
+                $Archivo = ''; 
             }
         }
     }
@@ -96,17 +87,14 @@ if($_POST){
         }
     }
     elseif ($Tipo == 'enlace') {
-        // Si es enlace, se toma del input Archivo (URL)
         $nuevo_enlace = (isset($_POST['Archivo'])) ? trim($_POST['Archivo']) : '';
         if (!empty($nuevo_enlace)) {
-            // Si antes era archivo/video, eliminar el archivo físico
             if (($tipo_anterior == 'video' || $tipo_anterior == 'archivo') && !empty($archivo_actual)) {
                 $ruta_anterior = "./" . ($tipo_anterior == 'video' ? 'Video/' : 'Archivos/') . $archivo_actual;
                 if (file_exists($ruta_anterior)) unlink($ruta_anterior);
             }
             $Archivo = $nuevo_enlace;
         } else {
-            // Si no se proporciona enlace, y antes era enlace, mantener el anterior
             if ($tipo_anterior == 'enlace' && !empty($archivo_actual)) {
                 $Archivo = $archivo_actual;
             } else {
@@ -115,7 +103,6 @@ if($_POST){
         }
     }
 
-    // Validación básica
     if(empty($IDCurso) || empty($Titulo) || empty($Tipo) || empty($Archivo)) {
         $mensaje_error = "Todos los campos obligatorios deben ser completados (asegúrese de subir un archivo o video si corresponde).";
     } else {
