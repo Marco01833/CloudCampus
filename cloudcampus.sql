@@ -105,7 +105,7 @@ CREATE TABLE Contenido (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     IDCurso INT NOT NULL,
     Titulo VARCHAR(100) NOT NULL,
-    Tipo VARCHAR(20) NOT NULL, 
+    Tipo ENUM('video','archivo','enlace'),
     Archivo VARCHAR(255) NOT NULL,
     OrdenContenido INT NOT NULL,  
     Bloqueado BOOLEAN DEFAULT 1, 
