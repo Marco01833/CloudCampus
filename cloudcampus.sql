@@ -155,6 +155,180 @@ ALTER TABLE Usuarios ADD COLUMN bloqueado_hasta DATETIME NULL AFTER intentos_fal
 ALTER TABLE SesionesActivas 
 ADD COLUMN Dispositivo VARCHAR(100) NULL AFTER TokenSesion;
 
+ALTER TABLE cursos
+ADD COLUMN Estado ENUM('Aprobado', 'Rechazado', 'Pendiente') DEFAULT 'Pendiente';
+
+
+CREATE TABLE Cuestionarios (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDCurso INT NOT NULL,
+    IDContenido INT NOT NULL,
+    IDCreador INT NOT NULL, 
+    Titulo VARCHAR(100) NOT NULL,
+    Descripcion VARCHAR(255) NULL,
+    CantidadPreguntas INT NULL, 
+    TiempoLimite INT NULL, 
+    FOREIGN KEY (IDCurso) REFERENCES Cursos(ID),
+    FOREIGN KEY (IDCreador) REFERENCES Usuarios(ID),
+    FOREIGN KEY (IDContenido) REFERENCES Contenido(ID) 
+);
+
+
+CREATE TABLE Preguntas (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDCuestionario INT NOT NULL, 
+    Enunciado TEXT NOT NULL,
+    Tipo ENUM('opcion_unica', 'opcion_multiple', 'verdadero_falso') DEFAULT 'opcion_unica',
+    Puntaje DECIMAL(5,2) NOT NULL DEFAULT 1.00, 
+    FOREIGN KEY (IDCuestionario) REFERENCES Cuestionarios(ID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Opciones (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDPregunta INT NOT NULL,
+    TextoOpcion VARCHAR(255) NOT NULL,
+    es_correcta BOOLEAN DEFAULT FALSE, 
+    OrdenOpcion INT NULL,
+    FOREIGN KEY (IDPregunta) REFERENCES Preguntas(ID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IntentosCuestionario (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDUsuario INT NOT NULL,
+    IDCuestionario INT NOT NULL,
+    FechaInicio DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FechaFin DATETIME NULL,
+    Calificacion DECIMAL(5,2) NULL, 
+    Aciertos INT NULL,
+    Fallos INT NULL,
+    Estado ENUM('en_progreso', 'finalizado', 'cancelado') DEFAULT 'en_progreso',
+    FOREIGN KEY (IDUsuario) REFERENCES Usuarios(ID),
+    FOREIGN KEY (IDCuestionario) REFERENCES Cuestionarios(ID)
+);
+
+CREATE TABLE RespuestasUsuario (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDIntento INT NOT NULL,
+    IDPregunta INT NOT NULL,
+    IDOpcionSeleccionada INT NULL, 
+    FOREIGN KEY (IDIntento) REFERENCES IntentosCuestionario(ID) ON DELETE CASCADE,
+    FOREIGN KEY (IDPregunta) REFERENCES Preguntas(ID),
+    FOREIGN KEY (IDOpcionSeleccionada) REFERENCES Opciones(ID)
+);
+
+CREATE TABLE NotasCurso (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDUsuario INT NOT NULL,
+    IDCurso INT NOT NULL,
+    NotaFinal DECIMAL(5,2) NULL,   
+    FechaCalculo DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (IDUsuario) REFERENCES Usuarios(ID),
+    FOREIGN KEY (IDCurso) REFERENCES Cursos(ID),
+    UNIQUE KEY unique_usuario_curso (IDUsuario, IDCurso) 
+);
+
+
+CREATE VIEW vista_cursos_pendientes_admin AS
+SELECT 
+    c.ID AS CursoID,
+    c.Nombre AS CursoNombre,
+    c.Descripcion AS CursoDescripcion,
+    c.Precio AS CursoPrecio,
+    c.Imagen AS CursoImagen,
+    c.Estado AS CursoEstado,
+    u.ID AS ProfesorID,
+    u.Correo AS ProfesorCorreo,
+    dp.Nombre AS ProfesorNombre,
+    dp.Apellidos AS ProfesorApellidos,
+    dp.Telefono AS ProfesorTelefono
+FROM 
+    Cursos c
+INNER JOIN 
+    Usuarios u ON c.IDUsuario = u.ID
+LEFT JOIN 
+    DatosPersonales dp ON u.ID = dp.IDUsuario
+WHERE 
+    c.Estado = 'Pendiente';
+
+
+CREATE VIEW vista_cursos_aprobados_estudiante AS
+SELECT 
+    c.ID AS CursoID,
+    c.Nombre AS CursoNombre,
+    c.Descripcion AS CursoDescripcion,
+    c.Precio AS CursoPrecio,
+    c.Imagen AS CursoImagen,
+    u.ID AS ProfesorID,
+    u.Correo AS ProfesorCorreo,
+    dp.Nombre AS ProfesorNombre,
+    dp.Apellidos AS ProfesorApellidos,
+    dp.Telefono AS ProfesorTelefono
+FROM 
+    Cursos c
+INNER JOIN 
+    Usuarios u ON c.IDUsuario = u.ID
+LEFT JOIN 
+    DatosPersonales dp ON u.ID = dp.IDUsuario
+WHERE 
+    c.Estado = 'Aprobado';
+
+
+CREATE VIEW vista_inscripciones_por_curso_admin AS
+SELECT 
+    c.ID AS CursoID,
+    c.Nombre AS CursoNombre,
+    c.Descripcion AS CursoDescripcion,
+    c.Precio AS CursoPrecio,
+    c.Estado AS CursoEstado,
+    u.ID AS ProfesorID,
+    u.Correo AS ProfesorCorreo,
+    dp.Nombre AS ProfesorNombre,
+    dp.Apellidos AS ProfesorApellidos,
+    COUNT(i.ID) AS TotalInscritos,
+    COUNT(DISTINCT i.IDUsuario) AS EstudiantesUnicos,
+    MAX(i.FechaInscripcion) AS UltimaInscripcion,
+    MIN(i.FechaInscripcion) AS PrimeraInscripcion
+FROM 
+    Cursos c
+INNER JOIN 
+    Usuarios u ON c.IDUsuario = u.ID
+LEFT JOIN 
+    DatosPersonales dp ON u.ID = dp.IDUsuario
+LEFT JOIN 
+    Inscripciones i ON c.ID = i.IDCurso AND i.Estado = 1
+WHERE 
+    c.Estado = 'Aprobado'  
+GROUP BY 
+    c.ID, c.Nombre, c.Descripcion, c.Precio, c.Estado,
+    u.ID, u.Correo, dp.Nombre, dp.Apellidos
+ORDER BY 
+    TotalInscritos DESC;  
+
+
+CREATE VIEW vista_cursos_por_profesor AS
+SELECT 
+    c.ID AS CursoID,
+    c.Nombre AS CursoNombre,
+    c.Descripcion AS CursoDescripcion,
+    c.Precio AS CursoPrecio,
+    c.Imagen AS CursoImagen,
+    c.Estado AS CursoEstado,
+    u.ID AS ProfesorID,
+    u.Correo AS ProfesorCorreo,
+    dp.Nombre AS ProfesorNombre,
+    dp.Apellidos AS ProfesorApellidos,
+    dp.Telefono AS ProfesorTelefono
+FROM 
+    Cursos c
+INNER JOIN 
+    Usuarios u ON c.IDUsuario = u.ID
+LEFT JOIN 
+    DatosPersonales dp ON u.ID = dp.IDUsuario
+ORDER BY 
+    u.ID, c.ID;  
+
 INSERT INTO Roles (ID, Nombre) VALUES
 (1, 'Usuario'), 
 (2, 'Administrador'),
