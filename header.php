@@ -44,7 +44,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>planes/index.php">Planes</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Permisos/permisos.php">Permisos</a></li>                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones activas</a></li> 
                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos/index.php">Cursos</a></li> 
-                       <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Contenido/index.php">Contenido</a></li>
+                       <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Contenido/index.php">Cont454enido</a></li>
                        <!-- <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Inscripciones/index.php">Inscripciones</a></li> --> 
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos_Usuario/index.php">Mis Cursos</a></li>
