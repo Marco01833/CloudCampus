@@ -27,9 +27,6 @@ if($_POST){
     $Nombre = (isset($_POST["Nombre"])) ? $_POST["Nombre"] : "";
     $Descripcion = (isset($_POST["Descripcion"])) ? $_POST["Descripcion"] : "";
     $Precio = (isset($_POST["Precio"])) ? (float)$_POST["Precio"] : 0;
-
-    // Verificar que el usuario sea profesor (opcional)
-    // Verificar que no tenga otro curso (excepto el actual)
     $verificar = $conexion->prepare("SELECT ID FROM Cursos WHERE IDUsuario = :uid AND ID != :id");
     $verificar->bindParam(":uid", $IDUsuario);
     $verificar->bindParam(":id", $txtID);
@@ -39,13 +36,12 @@ if($_POST){
     }
 
     if(empty($error)){
-        // Obtener imagen actual para posible eliminación
         $sentencia = $conexion->prepare("SELECT Imagen FROM Cursos WHERE ID = :id");
         $sentencia->bindParam(":id", $txtID);
         $sentencia->execute();
         $imagen_actual = $sentencia->fetch(PDO::FETCH_LAZY)["Imagen"];
 
-        $Imagen = $imagen_actual; // por defecto
+        $Imagen = $imagen_actual; 
 
         if(isset($_FILES["Imagen"]["name"]) && $_FILES["Imagen"]["name"] != ''){
             $fecha_ = new DateTime();
@@ -53,7 +49,6 @@ if($_POST){
             $tmp_imagen = $_FILES["Imagen"]['tmp_name'];
 
             if(move_uploaded_file($tmp_imagen, "./Imagen/" . $nombreArchivo_imagen)){
-                // Eliminar imagen anterior si existe y no es la default
                 if(!empty($imagen_actual) && $imagen_actual != 'default.jpg' && file_exists("./Imagen/" . $imagen_actual)){
                     unlink("./Imagen/" . $imagen_actual);
                 }
@@ -82,7 +77,6 @@ if($_POST){
     }
 }
 
-// Obtener lista de profesores (IDRol = 3) disponibles: sin curso o el mismo profesor actual
 $usuarios_disponibles = $conexion->query("
     SELECT u.ID, u.Correo 
     FROM Usuarios u
@@ -191,8 +185,6 @@ function previewImage(input) {
         };
         reader.readAsDataURL(input.files[0]);
     } else {
-        // Si se borra la selección, no recargamos, solo mostramos la actual (el HTML ya la tiene)
-        // Simplemente no hacemos nada.
     }
 }
 </script>
