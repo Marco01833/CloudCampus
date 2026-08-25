@@ -13,7 +13,6 @@ if(isset($_GET['txtID'])){
             unlink("./Imagen/".$registro["Imagen"]);
         }
     }
-
     $sentencia = $conexion->prepare("DELETE FROM Cursos WHERE ID = :id");
     $sentencia->bindParam(":id", $txtID);
     $sentencia->execute();
