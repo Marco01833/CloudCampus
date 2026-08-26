@@ -5,14 +5,12 @@ $id_usuario = $_SESSION['user_id'];
 $rol_usuario = $_SESSION['rol'] ?? 0;
 
 if ($rol_usuario == 2 || $rol_usuario == 3) {
-
-
     $consulta = "SELECT 
                     c.ID AS ID, 
                     c.Nombre AS nombre_curso, 
                     c.Descripcion AS Descripcion, 
                     c.Imagen AS Imagen,
-                    c.Estado  AS Estado
+                    c.Estado AS Estado
                 FROM cursos c
                 WHERE c.IDUsuario = :id_usuario
                 ORDER BY c.ID DESC";
@@ -24,8 +22,8 @@ if ($rol_usuario == 2 || $rol_usuario == 3) {
                     c.Imagen AS Imagen,
                     i.FechaInscripcion AS FechaInscripcion
                 FROM Inscripciones i
-                JOIN Cursos c ON i.CursoID = c.ID
-                WHERE i.EstudianteID = :id_usuario
+                JOIN Cursos c ON i.IDCurso = c.ID
+                WHERE i.IDUsuario = :id_usuario
                 ORDER BY i.FechaInscripcion DESC";
 }
 $sentencia = $conexion->prepare($consulta);
@@ -54,9 +52,9 @@ include("../header.php");
                                 <?php 
                                     $mostrarEliminar = false;
                                     if ($rol_usuario == 2) {
-                                        $mostrarEliminar = true;
-                                    } elseif ($rol_usuario == 3 && isset($curso['Estado']) && in_array($curso['Estado'], ['Pendiente', 'Rechazado'])) {
-                                        $mostrarEliminar = true;
+                                        $mostrarEliminar = ($curso['Estado'] != 'Aprobado');
+                                    } elseif ($rol_usuario == 3) {
+                                        $mostrarEliminar = in_array($curso['Estado'], ['Pendiente', 'Rechazado']);
                                     }
                                 ?>
                                 <?php if ($mostrarEliminar): ?>

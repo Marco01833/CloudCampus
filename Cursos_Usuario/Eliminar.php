@@ -1,6 +1,7 @@
 <?php
 include("../autenticacion.php");
 include("../bd.php");
+
 if (!isset($_POST['id'])) {
     header("Location: index.php?mensaje=ID de curso no proporcionado");
     exit;
@@ -9,6 +10,7 @@ if (!isset($_POST['id'])) {
 $id_curso = (int)$_POST['id'];
 $id_usuario = $_SESSION['user_id'];
 $rol_usuario = $_SESSION['rol'] ?? 0;
+
 $stmt = $conexion->prepare("SELECT ID, Imagen, Estado FROM Cursos WHERE ID = ?");
 $stmt->execute([$id_curso]);
 $curso = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -20,9 +22,9 @@ if (!$curso) {
 
 $permiso = false;
 if ($rol_usuario == 2) {
-    $permiso = true;
-} elseif ($rol_usuario == 3 && in_array($curso['Estado'], ['Pendiente', 'Rechazado'])) {
-    $permiso = true;
+    $permiso = ($curso['Estado'] != 'Aprobado');
+} elseif ($rol_usuario == 3) {
+    $permiso = in_array($curso['Estado'], ['Pendiente', 'Rechazado']);
 }
 
 if (!$permiso) {
@@ -50,12 +52,16 @@ foreach ($contenidos as $contenido) {
 }
 
 try {
-    $stmt = $conexion->prepare("CALL sp_eliminar_curso(?, @mensaje)");
+    $stmt = $conexion->prepare("DELETE FROM Contenido WHERE IDCurso = ?");
     $stmt->execute([$id_curso]);
-    $stmt = $conexion->query("SELECT @mensaje AS mensaje");
-    $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-    $mensaje = $resultado['mensaje'];
-    header("Location: index.php?mensaje=" . urlencode($mensaje));
+
+    $stmt = $conexion->prepare("DELETE FROM Inscripciones WHERE IDCurso = ?");
+    $stmt->execute([$id_curso]);
+
+    $stmt = $conexion->prepare("DELETE FROM Cursos WHERE ID = ?");
+    $stmt->execute([$id_curso]);
+
+    header("Location: index.php?mensaje=Curso eliminado correctamente");
     exit;
 } catch (PDOException $e) {
     header("Location: index.php?mensaje=Error al eliminar: " . $e->getMessage());
