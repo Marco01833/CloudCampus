@@ -1,7 +1,5 @@
 <?php include("../autenticacion.php");
 include("../bd.php");
-
-// Eliminar plan (GET)
 if(isset($_GET['txtID'])){
     $txtID = $_GET['txtID'];
     $sentencia = $conexion->prepare("DELETE FROM Planes WHERE ID = :id");
@@ -11,15 +9,11 @@ if(isset($_GET['txtID'])){
     header("Location: index.php?mensaje=".$mensaje);
     exit;
 }
-
-// Listar todos los planes
 $sentencia = $conexion->prepare("SELECT ID, Nombre, Precio, DuracionDias, Descuento FROM Planes");
 $sentencia->execute();
 $lista_planes = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <?php include("../header.php"); ?>
-
 <?php if(isset($_GET['mensaje'])) { ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="bi bi-check-circle"></i>
@@ -27,7 +21,6 @@ $lista_planes = $sentencia->fetchAll(PDO::FETCH_ASSOC);
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php } ?>
-
 <div class="card">
     <div class="card-header">
         <a name="" id="" class="btn btn-outline-primary" href="crear.php" role="button">

@@ -31,14 +31,7 @@ if(isset($_GET['txtID'])){
     header("Location: contenido.php?id=$id_curso&mensaje=Contenido eliminado");
     exit;
 }
-$sql = "SELECT 1 FROM Inscripciones 
-        WHERE IDUsuario = ? AND IDCurso = ? AND Estado = 1 
-        LIMIT 1";
-$stmt = $conexion->prepare($sql);
-$stmt->execute([$_SESSION['user_id'], $id_curso]);
-if ($stmt->rowCount() === 0) {
-    die("No tienes acceso a este curso");
-}
+
 $sql = "SELECT ID, Nombre, Descripcion, Imagen, Precio, IDUsuario FROM Cursos WHERE ID = ?";
 $stmt = $conexion->prepare($sql);
 $stmt->execute([$id_curso]);
@@ -46,10 +39,33 @@ $curso = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$curso) {
     die("Curso no encontrado");
 }
+
+$acceso = false;
+
+$sql = "SELECT 1 FROM Inscripciones 
+        WHERE IDUsuario = ? AND IDCurso = ? AND Estado = 1 
+        LIMIT 1";
+$stmt = $conexion->prepare($sql);
+$stmt->execute([$_SESSION['user_id'], $id_curso]);
+if ($stmt->rowCount() > 0) {
+    $acceso = true;
+}
+if (!$acceso && $curso['IDUsuario'] == $_SESSION['user_id']) {
+    $acceso = true;
+}
+if (!$acceso && $_SESSION['rol'] == 2) {
+    $acceso = true;
+}
+
+if (!$acceso) {
+    die("No tienes acceso a este curso");
+}
+
 $rol_usuario = $_SESSION['rol'] ?? 0;
 $esAdmin = ($rol_usuario == 2);
 $esProfesor = ($curso['IDUsuario'] == $_SESSION['user_id']);
 $puedeEditar = $esAdmin || $esProfesor;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $puedeEditar) {
     if (isset($_POST['editar_curso'])) {
         $nombre = trim($_POST['nombre_curso'] ?? '');
@@ -306,7 +322,6 @@ $mensaje = $_GET['mensaje'] ?? '';
             </div>
 
             <div class="card-body">
-                <!-- Imagen del curso -->
                 <?php if (!empty($curso['Imagen'])): ?>
                     <div class="text-center mb-4">
                         <img src="../Cursos/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" 
@@ -315,8 +330,6 @@ $mensaje = $_GET['mensaje'] ?? '';
                              style="max-height: 300px;">
                     </div>
                 <?php endif; ?>
-
-                <!-- Precio -->
                 <div class="mb-2">
                     <h5>Precio:</h5>
                     <?php if ($puedeEditar): ?>
@@ -497,7 +510,7 @@ $mensaje = $_GET['mensaje'] ?? '';
                                         <input type="file" class="form-control form-control-sm" 
                                                name="archivo_contenido" 
                                                id="inputFile_<?= $contenido['ID'] ?>" 
-                                               accept="<?= ($contenido['Tipo'] == 'video') ? 'video/*' : '*/*' ?>"
+                                               accept="<?= ($contenido['Tipo'] == 'video') ? 'video/*' : '*/*' ?>" 
                                                style="<?= ($contenido['Tipo'] == 'enlace') ? 'display:none;' : '' ?>">
                                         <input type="text" class="form-control form-control-sm" 
                                                name="archivo_contenido" 
@@ -602,7 +615,7 @@ $mensaje = $_GET['mensaje'] ?? '';
                                         <?php if (file_exists($rutaArchivo) && !$esVideoExterno): ?>
                                             <a href="<?= htmlspecialchars($rutaArchivo) ?>" 
                                                class="btn btn-sm btn-success" 
-                                               download="<?= htmlspecialchars($nombreArchivo) ?>"
+                                               download="<?= htmlspecialchars($nombreArchivo) ?>" 
                                                target="_blank">
                                                 <i class="fas fa-download me-1"></i> Descargar
                                             </a>

@@ -1,56 +1,35 @@
 <?php
+include("../autenticacion.php");
 include("../bd.php");
 
 if($_POST){
-    $IDUsuario = (isset($_POST["IDUsuario"])) ? (int)$_POST["IDUsuario"] : 0;
+    $IDUsuario = $_SESSION['user_id'];
     $Nombre = (isset($_POST["Nombre"])) ? $_POST["Nombre"] : "";
     $Descripcion = (isset($_POST["Descripcion"])) ? $_POST["Descripcion"] : "";
     $Precio = (isset($_POST["Precio"])) ? (float)$_POST["Precio"] : 0;
     $Imagen = (isset($_FILES["Imagen"]['name'])) ? $_FILES["Imagen"]['name'] : "";
 
-    if($IDUsuario > 0){
-        $verificar = $conexion->prepare("SELECT ID FROM Cursos WHERE IDUsuario = :uid");
-        $verificar->bindParam(":uid", $IDUsuario);
-        $verificar->execute();
-        if($verificar->rowCount() > 0){
-            $error = "Este profesor ya tiene un curso asignado.";
-        }
+    $fecha_ = new DateTime();
+    $nombreArchivo_imagen = ($Imagen != "") ? $fecha_->getTimestamp() . "_" . $_FILES["Imagen"]['name'] : "";
+    $tmp_imagen = $_FILES["Imagen"]['tmp_name'];
+
+    if($tmp_imagen != ""){
+        if(!is_dir("./Imagen/")) mkdir("./Imagen/", 0755, true);
+        move_uploaded_file($tmp_imagen, "./Imagen/".$nombreArchivo_imagen);
     } else {
-        $error = "Debe seleccionar un profesor.";
+        $nombreArchivo_imagen = "default.jpg";
     }
-    if(empty($error)){
-        $sentencia = $conexion->prepare("INSERT INTO Cursos (IDUsuario, Nombre, Descripcion, Precio, Imagen)
-                                         VALUES (:IDUsuario, :Nombre, :Descripcion, :Precio, :Imagen)");
-        $sentencia->bindParam(":IDUsuario", $IDUsuario);
-        $sentencia->bindParam(":Nombre", $Nombre);
-        $sentencia->bindParam(":Descripcion", $Descripcion);
-        $sentencia->bindParam(":Precio", $Precio);
 
-        $fecha_ = new DateTime();
-        $nombreArchivo_imagen = ($Imagen != "") ? $fecha_->getTimestamp() . "_" . $_FILES["Imagen"]['name'] : "";
-        $tmp_imagen = $_FILES["Imagen"]['tmp_name'];
+    try {
+        $stmt = $conexion->prepare("CALL sp_insertar_curso(?, ?, ?, ?, ?)");
+        $stmt->execute([$IDUsuario, $Nombre, $Descripcion, $Precio, $nombreArchivo_imagen]);
 
-        if($tmp_imagen != ""){
-            if(!is_dir("./Imagen/")) mkdir("./Imagen/", 0755, true);
-            move_uploaded_file($tmp_imagen, "./Imagen/".$nombreArchivo_imagen);
-        } else {
-            $nombreArchivo_imagen = "default.jpg";
-        }
-        $sentencia->bindParam(":Imagen", $nombreArchivo_imagen);
-        $sentencia->execute();
-
-        header("Location: index.php");
+        header("Location: index.php?mensaje=Curso creado correctamente");
         exit;
+    } catch (PDOException $e) {
+        $error = "Error al crear el curso: " . $e->getMessage();
     }
 }
-
-$usuarios_disponibles = $conexion->query("
-    SELECT u.ID, u.Correo 
-    FROM Usuarios u
-    LEFT JOIN Cursos c ON u.ID = c.IDUsuario
-    WHERE u.IDRol = 3 
-    ORDER BY u.Correo
-")->fetchAll(PDO::FETCH_ASSOC);
 
 include("../header.php");
 ?>
@@ -66,17 +45,6 @@ include("../header.php");
         <?php endif; ?>
 
         <form action="" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="IDUsuario" class="form-label">Profesor:</label>
-                <select name="IDUsuario" id="IDUsuario" class="form-select form-select-lg" required>
-                    <option value="">Seleccione un Profesor</option>
-                    <?php foreach($usuarios_disponibles as $usuario): ?>
-                        <option value="<?= $usuario['ID'] ?>"><?= htmlspecialchars($usuario['Correo']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <small class="form-text text-muted">Solo se muestran profesores sin curso asignado.</small>
-            </div>
-
             <div class="mb-3">
                 <label for="Nombre" class="form-label">Nombre:</label>
                 <input type="text" class="form-control" name="Nombre" id="Nombre" placeholder="Nombre del curso" required>
@@ -96,7 +64,7 @@ include("../header.php");
                 <label for="Imagen" class="form-label">Imagen:</label>
                 <div id="imagePreview" class="text-center mt-3"></div>
                 <input type="file" class="form-control" name="Imagen" id="Imagen" accept="image/*" onchange="previewImage(this)">
-                <small class="form-text text-muted">Formatos: JPG, PNG, GIF (opcional, se usará default.jpg si no se sube)</small>
+                <small class="form-text text-muted">Formatos: JPG, PNG, GIF</small>
             </div>
 
             <button type="submit" class="btn btn-success"><i class="bi bi-bookmarks-fill"></i> Guardar</button>
