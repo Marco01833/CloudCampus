@@ -11,7 +11,7 @@ if ($id_curso <= 0) {
     exit;
 }
 
-$sql = "SELECT ID, Nombre, Descripcion, Imagen, Precio, IDUsuario FROM Cursos WHERE ID = ?";
+$sql = "SELECT ID, Nombre, Descripcion, Imagen, Precio, IDUsuario FROM cursos WHERE ID = ?";
 $stmt = $conexion->prepare($sql);
 $stmt->execute([$id_curso]);
 $curso = $stmt->fetch(PDO::FETCH_ASSOC);
