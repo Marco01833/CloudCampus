@@ -247,4 +247,9 @@ INSERT INTO Planes (ID, Nombre, Precio, DuracionDias, Descuento) VALUES
 (2, 'Premium', 19.99, 30, 80);
 
 INSERT IGNORE INTO Usuarios (Correo, Contrasena, Estado, Verificado, IDRol, IDPlan)
-VALUES ('admin@gmail.com', '$2y$10$MO.YyljvwPgJh6.7XTC4h.MJNMr9EH0yRGlGF/6ZmMhBDnOWT.TIS', 1, 1, 2, 1);
+VALUES 
+('admin@gmail.com', '$2y$10$MO.YyljvwPgJh6.7XTC4h.MJNMr9EH0yRGlGF/6ZmMhBDnOWT.TIS', 1, 1, 2, 1),
+('profesor@gmail.com', '$2y$10$MO.YyljvwPgJh6.7XTC4h.MJNMr9EH0yRGlGF/6ZmMhBDnOWT.TIS', 1, 1, 3, 1),
+('estudiante@gmail.com', '$2y$10$MO.YyljvwPgJh6.7XTC4h.MJNMr9EH0yRGlGF/6ZmMhBDnOWT.TIS', 1, 1, 1, 1);
+
+
