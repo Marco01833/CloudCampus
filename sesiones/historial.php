@@ -1,8 +1,15 @@
 <?php
 include("../autenticacion.php");
 include("../bd.php");
-$sentencia = $conexion->prepare("SELECT * FROM SesionesActivas WHERE Estado = 1 ORDER BY FechaInicio DESC");
-$sentencia->execute();
+$id_usuario = $_SESSION['user_id'] ?? null;
+if (!$id_usuario) {
+    header("Location: ../login.php");
+    exit;
+}
+$sentencia = $conexion->prepare("SELECT * FROM SesionesActivas 
+                                  WHERE IDUsuario = :id_usuario AND Estado = 1 
+                                  ORDER BY FechaInicio DESC");
+$sentencia->execute([':id_usuario' => $id_usuario]);
 $lista_sesiones = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 $mensaje = $_GET['mensaje'] ?? null;
 ?>
@@ -16,15 +23,16 @@ $mensaje = $_GET['mensaje'] ?? null;
 <?php endif; ?>
 <div class="card">
     <div class="card-header">
-        <h4>Sesiones Activas</h4>
+        <h4>Mis Sesiones Activas</h4>
     </div>
     <div class="card-body">
+        <?php if (count($lista_sesiones) === 0): ?>
+            <div class="alert alert-info">No tienes sesiones activas.</div>
+        <?php else: ?>
         <table class="table table-bordered">
             <thead class="table-primary">
                 <tr>
                     <th>ID</th>
-                    <th>ID Usuario</th>
-                    <th>Token</th>
                     <th>Dispositivo</th>
                     <th>Fecha Inicio</th>
                     <th>Acciones</th>
@@ -34,9 +42,7 @@ $mensaje = $_GET['mensaje'] ?? null;
                 <?php foreach($lista_sesiones as $sesion): ?>
                 <tr>
                     <td><?= $sesion['ID'] ?></td>
-                    <td><?= $sesion['IDUsuario'] ?></td>
-                    <td><small><?= substr($sesion['TokenSesion'], 0, 15) ?>...</small></td>
-                    <td><?= $sesion['Dispositivo'] ?? 'N/A' ?></td>
+                    <td><?= htmlspecialchars($sesion['Dispositivo'] ?? 'N/A') ?></td>
                     <td><?= $sesion['FechaInicio'] ?></td>
                     <td>
                         <?php if($sesion['ID'] != $_SESSION['session_id']): ?>
@@ -53,5 +59,6 @@ $mensaje = $_GET['mensaje'] ?? null;
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <?php endif; ?>
     </div>
 </div>

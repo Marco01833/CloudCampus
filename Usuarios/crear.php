@@ -2,25 +2,21 @@
 if($_POST){
 
     $correo = (isset($_POST["Correo"]) ? $_POST["Correo"] : "");
-    $clave  = (isset($_POST["Contraseña"]) ? $_POST["Contraseña"] : "");
+    $clave  = (isset($_POST["Contrasena"]) ? $_POST["Contrasena"] : "");
     $idRol  = (isset($_POST["IdRol"]) ? $_POST["IdRol"] : "");
     $idPlan = (isset($_POST["IdPlan"]) ? $_POST["IdPlan"] : "");
     $estado = (isset($_POST["Estado"]) ? $_POST["Estado"] : 1);
     $verificado = (isset($_POST["Verificado"]) ? $_POST["Verificado"] : 0);
 
-    if($correo == "" || $clave == "" || $idRol == "" || $idPlan == "") {
+    if($correo == "" || $clave == ""  ) {
         $error = "Todos los campos son obligatorios";
     } else {
         $claveHash = password_hash($clave, PASSWORD_DEFAULT);
         
-        $sentencia = $conexion->prepare("INSERT INTO Usuarios (Correo, Contraseña, Estado, IDRol, IDPlan, Verificado, NumeroSesiones)
-        VALUES (:Correo, :Clave, :Estado, :IDRol, :IDPlan, :Verificado, 1)");
+        $sentencia = $conexion->prepare("INSERT INTO Usuarios (Correo, Contrasena, Estado, IDRol, IDPlan, Verificado, NumeroSesiones)
+        VALUES (:Correo, :Clave, 1, 3, 1, 1, 2)");
         $sentencia->bindParam(":Correo", $correo);
         $sentencia->bindParam(":Clave", $claveHash);
-        $sentencia->bindParam(":Estado", $estado);
-        $sentencia->bindParam(":IDRol", $idRol);
-        $sentencia->bindParam(":IDPlan", $idPlan);
-        $sentencia->bindParam(":Verificado", $verificado);
         $sentencia->execute();
         header("Location: usuarios.php");
         exit;
@@ -48,42 +44,9 @@ if($_POST){
             </div>
 
             <div class="mb-3">
-                <label for="Contraseña" class="form-label">Contraseña:</label>
-                <input type="password" class="form-control form-control-lg" name="Contraseña" id="Contraseña" 
+                <label for="Contrasena" class="form-label">Contraseña:</label>
+                <input type="password" class="form-control form-control-lg" name="Contrasena" id="Contraseña" 
                        placeholder="Ingrese la contraseña" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="IdRol" class="form-label">Rol:</label>
-                <select name="IdRol" id="IdRol" class="form-select form-select-lg" required>
-                    <option value="1">Estudiante</option>
-                    <option value="2">Administrador</option>
-                    <option value="3">Profesor</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="IdPlan" class="form-label">Plan:</label>
-                <select name="IdPlan" id="IdPlan" class="form-select form-select-lg" required>
-                    <option value="1">Básico</option>
-                    <option value="2">Premium</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="Estado" class="form-label">Estado:</label>
-                <select name="Estado" id="Estado" class="form-select form-select-lg" required>
-                    <option value="1" selected>HABILITADO</option>
-                    <option value="0">INHABILITADO</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="Verificado" class="form-label">Verificado:</label>
-                <select name="Verificado" id="Verificado" class="form-select form-select-lg" required>
-                    <option value="0" selected>No verificado</option>
-                    <option value="1">Verificado</option>
-                </select>
             </div>
 
             <button type="submit" class="btn btn-success btn-lg">Guardar</button>

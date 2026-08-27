@@ -22,7 +22,7 @@ if ($rol_usuario == 2 || $rol_usuario == 3) {
                     c.Imagen AS Imagen,
                     i.FechaInscripcion AS FechaInscripcion
                 FROM Inscripciones i
-                JOIN Cursos c ON i.IDCurso = c.ID
+                JOIN cursos c ON i.IDCurso = c.ID
                 WHERE i.IDUsuario = :id_usuario
                 ORDER BY i.FechaInscripcion DESC";
 }
@@ -68,7 +68,7 @@ include("../header.php");
                                 <?php endif; ?>
 
                                 <?php if (!empty($curso['Imagen'])): ?>
-                                    <img src="../Cursos/Imagen/<?= htmlspecialchars($curso['Imagen']); ?>" class="card-img-top" alt="<?= htmlspecialchars($curso['nombre_curso']); ?>" style="height: 180px; object-fit: cover;">
+                                    <img src="../Cursos_Usuario/Imagen/<?= htmlspecialchars($curso['Imagen']); ?>" class="card-img-top" alt="<?= htmlspecialchars($curso['nombre_curso']); ?>" style="height: 180px; object-fit: cover;">
                                 <?php endif; ?>
                                 
                                 <div class="card-body d-flex flex-column">

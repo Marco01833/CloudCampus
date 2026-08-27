@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 $id_curso = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id_curso <= 0) {
-    header("Location: ../Cursos/index.php");
+    header("Location: index.php");
     exit;
 }
 
@@ -39,10 +39,10 @@ if (isset($_GET['txtID'])) {
     if ($registro) {
         $archivo = $registro['Archivo'];
         $tipo = $registro['Tipo'];
-        if ($tipo == 'video' && !empty($archivo) && file_exists("../Contenido/Video/".$archivo)) {
-            unlink("../Contenido/Video/".$archivo);
-        } elseif ($tipo == 'archivo' && !empty($archivo) && file_exists("../Contenido/Archivos/".$archivo)) {
-            unlink("../Contenido/Archivos/".$archivo);
+        if ($tipo == 'video' && !empty($archivo) && file_exists("Video/".$archivo)) {
+            unlink("Video/".$archivo);
+        } elseif ($tipo == 'archivo' && !empty($archivo) && file_exists("Archivos/".$archivo)) {
+            unlink("Archivos/".$archivo);
         }
     }
     $sentencia = $conexion->prepare("DELETE FROM Contenido WHERE ID = :id");
@@ -63,7 +63,7 @@ if (isset($_GET['txtID'])) {
     $tipo_anterior = $datos_actuales['Tipo'] ?? '';
     $archivo = $archivo_actual;
     if ($tipo != $tipo_anterior && ($tipo_anterior == 'video' || $tipo_anterior == 'archivo') && !empty($archivo_actual)) {
-        $ruta_anterior = "../Contenido/" . ($tipo_anterior == 'video' ? 'Video/' : 'Archivos/') . $archivo_actual;
+        $ruta_anterior = "../Cursos_Usuario/" . ($tipo_anterior == 'video' ? 'Video/' : 'Archivos/') . $archivo_actual;
         if (file_exists($ruta_anterior)) unlink($ruta_anterior);
         $archivo = '';
     }
@@ -73,7 +73,7 @@ if (isset($_GET['txtID'])) {
             $fecha = new DateTime();
             $nombre_archivo = $fecha->getTimestamp() . "_" . $_FILES["archivo_contenido"]["name"];
             $tmp_archivo = $_FILES["archivo_contenido"]['tmp_name'];
-            $carpeta_archivos = "../Contenido/Archivos/";
+            $carpeta_archivos = "../Cursos_Usuario/Archivos/";
             if (!file_exists($carpeta_archivos)) mkdir($carpeta_archivos, 0755, true);
             if (move_uploaded_file($tmp_archivo, $carpeta_archivos . $nombre_archivo)) {
                 if (!empty($archivo_actual) && $archivo_actual != $nombre_archivo && file_exists($carpeta_archivos . $archivo_actual)) {
@@ -93,7 +93,7 @@ if (isset($_GET['txtID'])) {
             $fecha = new DateTime();
             $nombre_archivo = $fecha->getTimestamp() . "_" . $_FILES["archivo_contenido"]["name"];
             $tmp_video = $_FILES["archivo_contenido"]['tmp_name'];
-            $carpeta_videos = "../Contenido/Video/";
+            $carpeta_videos = "../Cursos_Usuario/Video/";
             if (!file_exists($carpeta_videos)) mkdir($carpeta_videos, 0755, true);
             if (move_uploaded_file($tmp_video, $carpeta_videos . $nombre_archivo)) {
                 if (!empty($archivo_actual) && $archivo_actual != $nombre_archivo && file_exists($carpeta_videos . $archivo_actual)) {
@@ -112,7 +112,7 @@ if (isset($_GET['txtID'])) {
         $nuevo_enlace = (isset($_POST['archivo_contenido'])) ? trim($_POST['archivo_contenido']) : '';
         if (!empty($nuevo_enlace)) {
             if (($tipo_anterior == 'video' || $tipo_anterior == 'archivo') && !empty($archivo_actual)) {
-                $ruta_anterior = "../Contenido/" . ($tipo_anterior == 'video' ? 'Video/' : 'Archivos/') . $archivo_actual;
+                $ruta_anterior = "../Cursos_Usuario/" . ($tipo_anterior == 'video' ? 'Video/' : 'Archivos/') . $archivo_actual;
                 if (file_exists($ruta_anterior)) unlink($ruta_anterior);
             }
             $archivo = $nuevo_enlace;
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_curso'])) {
         $fecha = new DateTime();
         $nombre_archivo = $fecha->getTimestamp() . "_" . $_FILES['imagen_curso']['name'];
         $tmp_imagen = $_FILES['imagen_curso']['tmp_name'];
-        $carpeta = "../Cursos/Imagen/";
+        $carpeta = "../Cursos_Usuario/Imagen/";
         if (!is_dir($carpeta)) mkdir($carpeta, 0755, true);
         if (move_uploaded_file($tmp_imagen, $carpeta . $nombre_archivo)) {
             if (!empty($imagen_actual) && $imagen_actual != 'default.jpg' && file_exists($carpeta . $imagen_actual)) {
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_curso'])) {
             $nueva_imagen = $nombre_archivo;
         }
     }
-    $sql = "UPDATE Cursos SET Nombre = ?, Descripcion = ?, Precio = ?, Imagen = ? WHERE ID = ?";
+    $sql = "UPDATE cursos SET Nombre = ?, Descripcion = ?, Precio = ?, Imagen = ? WHERE ID = ?";
     $stmt = $conexion->prepare($sql);
     $stmt->execute([$nombre, $descripcion, $precio, $nueva_imagen, $id_curso]);
     header("Location: contenido.php?id=$id_curso&mensaje=Curso actualizado");
@@ -208,7 +208,7 @@ $mensaje = $_GET['mensaje'] ?? '';
             <div class="card-body">
                 <?php if (!empty($curso['Imagen'])): ?>
                     <div class="text-center mb-4">
-                        <img src="../Cursos/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" 
+                        <img src="../Cursos_Usuario/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" 
                              class="img-fluid rounded" 
                              alt="<?= htmlspecialchars($curso['Nombre']) ?>"
                              style="max-height: 300px;">

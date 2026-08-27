@@ -13,7 +13,7 @@ if(isset($_GET["txtID"])){
         $Estado      = $registro["Estado"];
         $IDRol       = $registro["IDRol"];
         $IDPlan      = $registro["IDPlan"];
-        $Verificado  = $registro["Verificado"]; // <--- AGREGADO
+        $Verificado  = $registro["Verificado"]; 
     }
 }
 
@@ -24,7 +24,7 @@ if($_POST){
     $Estado     = (isset($_POST["Estado"])) ? $_POST["Estado"] : "";
     $IDRol      = (isset($_POST["IdRol"])) ? $_POST["IdRol"] : "";
     $IDPlan     = (isset($_POST["IdPlan"])) ? $_POST["IdPlan"] : "";
-    $Verificado = (isset($_POST["Verificado"])) ? $_POST["Verificado"] : 0; // <--- AGREGADO
+    $Verificado = (isset($_POST["Verificado"])) ? $_POST["Verificado"] : 0; 
 
     if(!empty($Contraseña)) {
         $ContraseñaHash = password_hash($Contraseña, PASSWORD_DEFAULT);
@@ -50,7 +50,7 @@ if($_POST){
     $sentencia->bindParam(":Estado", $Estado);
     $sentencia->bindParam(":IDRol", $IDRol);
     $sentencia->bindParam(":IDPlan", $IDPlan);
-    $sentencia->bindParam(":Verificado", $Verificado); // <--- AGREGADO
+    $sentencia->bindParam(":Verificado", $Verificado); 
     $sentencia->bindParam(":id", $txtID);
     $sentencia->execute();
     
@@ -121,7 +121,7 @@ if($_POST){
                         </div>
 
                         <div class="mb-3">
-                            <label for="Verificado" class="form-label fw-bold">Verificado:</label> <!-- NUEVO -->
+                            <label for="Verificado" class="form-label fw-bold">Verificado:</label> 
                             <select name="Verificado" id="Verificado" class="form-select form-select-lg" required>
                                 <option value="1" <?php echo ($Verificado == 1) ? 'selected' : ''; ?>>Sí</option>
                                 <option value="0" <?php echo ($Verificado == 0) ? 'selected' : ''; ?>>No</option>

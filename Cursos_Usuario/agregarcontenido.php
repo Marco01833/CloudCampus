@@ -2,14 +2,11 @@
 include("../autenticacion.php");
 include("../bd.php");
 
-// Obtener el ID del curso desde GET (automático)
 $IDCurso = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($IDCurso <= 0) {
     header("Location: ../Cursos/index.php");
     exit;
 }
-
-// Variables iniciales (sin OrdenContenido)
 $Titulo = '';
 $Tipo = '';
 $Archivo = '';
@@ -26,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $fecha = new DateTime();
             $nombre_archivo = $fecha->getTimestamp() . "_" . $_FILES["archivo"]["name"];
             $tmp_archivo = $_FILES["archivo"]['tmp_name'];
-            $carpeta_archivos = "../Contenido/Archivos/";
+            $carpeta_archivos = "../Cursos_Usuario/Archivos/";
             if (!file_exists($carpeta_archivos)) mkdir($carpeta_archivos, 0755, true);
             if (move_uploaded_file($tmp_archivo, $carpeta_archivos . $nombre_archivo)) {
                 $Archivo = $nombre_archivo;
@@ -37,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $fecha = new DateTime();
             $nombre_archivo = $fecha->getTimestamp() . "_" . $_FILES["video"]["name"];
             $tmp_video = $_FILES["video"]['tmp_name'];
-            $carpeta_videos = "../Contenido/Video/";
+            $carpeta_videos = "../Cursos_Usuario/Video/";
             if (!file_exists($carpeta_videos)) mkdir($carpeta_videos, 0755, true);
             if (move_uploaded_file($tmp_video, $carpeta_videos . $nombre_archivo)) {
                 $Archivo = $nombre_archivo;
@@ -47,11 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $Archivo = trim($_POST['Archivo'] ?? '');
     }
 
-    // Solo validación básica (como en crear.php)
     if (empty($Titulo) || empty($Tipo) || ($Tipo != 'enlace' && empty($Archivo))) {
         $mensaje_error = "Todos los campos obligatorios deben ser completados.";
     } else {
-        // INSERT sin OrdenContenido
         $sql = "INSERT INTO Contenido (IDCurso, Titulo, Tipo, Archivo, Bloqueado) 
                 VALUES (?, ?, ?, ?, ?)";
         $stmt = $conexion->prepare($sql);
@@ -79,13 +74,12 @@ include("../header.php");
                     <?php endif; ?>
 
                     <form action="" method="post" enctype="multipart/form-data">
-                        <!-- Curso (mostrar como texto, no editable) -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">
                                 <i class="bi bi-journal-text"></i> Curso:
                             </label>
                             <?php
-                            $stmt = $conexion->prepare("SELECT Nombre FROM Cursos WHERE ID = ?");
+                            $stmt = $conexion->prepare("SELECT Nombre FROM cursos WHERE ID = ?");
                             $stmt->execute([$IDCurso]);
                             $curso = $stmt->fetch(PDO::FETCH_ASSOC);
                             ?>
@@ -94,7 +88,6 @@ include("../header.php");
                             <input type="hidden" name="IDCurso" value="<?= $IDCurso ?>" />
                         </div>
 
-                        <!-- Título -->
                         <div class="mb-4">
                             <label for="Titulo" class="form-label fw-bold">
                                 <i class="bi bi-card-heading"></i> Título:
@@ -105,7 +98,6 @@ include("../header.php");
                             <small class="form-text text-muted d-block mt-2">Ingrese el título del contenido</small>
                         </div>
 
-                        <!-- Tipo -->
                         <div class="mb-4">
                             <label for="Tipo" class="form-label fw-bold">
                                 <i class="bi bi-collection"></i> Tipo de contenido:
@@ -119,20 +111,17 @@ include("../header.php");
                             </select>
                         </div>
 
-                        <!-- Campo Video -->
                         <div id="campoVideo" class="mb-4" style="display: none;">
                             <label for="video" class="form-label fw-bold"><i class="bi bi-camera-video"></i> Subir video:</label>
                             <input type="file" class="form-control form-control-lg" name="video" id="video" accept="video/*">
                             <small class="form-text text-muted d-block mt-2">Formatos aceptados: MP4, WebM, OGG</small>
                         </div>
 
-                        <!-- Campo Archivo -->
                         <div id="campoArchivo" class="mb-4" style="display: none;">
                             <label for="archivo" class="form-label fw-bold"><i class="bi bi-file-earmark-arrow-up"></i> Subir archivo:</label>
                             <input type="file" class="form-control form-control-lg" name="archivo" id="archivo">
                         </div>
 
-                        <!-- Campo Enlace -->
                         <div id="campoEnlace" class="mb-4" style="display: none;">
                             <label for="Archivo" class="form-label fw-bold"><i class="bi bi-link-45deg"></i> URL:</label>
                             <input type="url" class="form-control form-control-lg border-2" 
@@ -142,7 +131,6 @@ include("../header.php");
                             <small class="form-text text-muted d-block mt-2">Ingrese la URL completa (incluyendo http:// o https://)</small>
                         </div>
 
-                        <!-- Bloqueado -->
                         <div class="mb-4">
                             <label for="Bloqueado" class="form-label fw-bold">
                                 <i class="bi bi-lock"></i> Bloqueado:

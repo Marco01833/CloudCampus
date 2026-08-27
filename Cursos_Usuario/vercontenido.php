@@ -1,6 +1,6 @@
 <?php
 function obtenerRutaArchivo($tipo, $nombreArchivo) {
-    $directorioBase = '../Contenido/';
+    $directorioBase = '../Cursos_Usuario/';
     $subdirectorio = ($tipo === 'video') ? 'Video/' : 'Archivos/';
     $rutaCompleta = $directorioBase . $subdirectorio . $nombreArchivo;
     if (file_exists($rutaCompleta)) return $rutaCompleta;

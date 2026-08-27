@@ -11,7 +11,7 @@ $id_curso = (int)$_POST['id'];
 $id_usuario = $_SESSION['user_id'];
 $rol_usuario = $_SESSION['rol'] ?? 0;
 
-$stmt = $conexion->prepare("SELECT ID, Imagen, Estado FROM Cursos WHERE ID = ?");
+$stmt = $conexion->prepare("SELECT ID, Imagen, Estado FROM cursos WHERE ID = ?");
 $stmt->execute([$id_curso]);
 $curso = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -33,7 +33,7 @@ if (!$permiso) {
 }
 
 if (!empty($curso['Imagen']) && $curso['Imagen'] != 'default.jpg') {
-    $ruta_imagen = "../Cursos/Imagen/" . $curso['Imagen'];
+    $ruta_imagen = "../Cursos_Usuario/Imagen/" . $curso['Imagen'];
     if (file_exists($ruta_imagen)) {
         unlink($ruta_imagen);
     }
@@ -44,7 +44,7 @@ $stmt->execute([$id_curso]);
 $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($contenidos as $contenido) {
     if ($contenido['Tipo'] == 'video' || $contenido['Tipo'] == 'archivo') {
-        $ruta = "../Contenido/" . ($contenido['Tipo'] == 'video' ? 'Video/' : 'Archivos/') . $contenido['Archivo'];
+        $ruta = "../Cursos_Usuario/" . ($contenido['Tipo'] == 'video' ? 'Video/' : 'Archivos/') . $contenido['Archivo'];
         if (file_exists($ruta)) {
             unlink($ruta);
         }
@@ -58,7 +58,7 @@ try {
     $stmt = $conexion->prepare("DELETE FROM Inscripciones WHERE IDCurso = ?");
     $stmt->execute([$id_curso]);
 
-    $stmt = $conexion->prepare("DELETE FROM Cursos WHERE ID = ?");
+    $stmt = $conexion->prepare("DELETE FROM cursos WHERE ID = ?");
     $stmt->execute([$id_curso]);
 
     header("Location: index.php?mensaje=Curso eliminado correctamente");

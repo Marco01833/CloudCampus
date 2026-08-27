@@ -21,7 +21,7 @@ if($_POST){
     }
 
     try {
-        $stmt = $conexion->prepare("INSERT INTO Cursos (IDUsuario, Nombre, Descripcion, Precio, Imagen) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $conexion->prepare("INSERT INTO cursos (IDUsuario, Nombre, Descripcion, Precio, Imagen) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$IDUsuario, $Nombre, $Descripcion, $Precio, $nombreArchivo_imagen]);
 
         header("Location: index.php?mensaje=Curso creado correctamente");
