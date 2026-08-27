@@ -3,7 +3,7 @@ include("bd.php");
 
 $cursos_mas_vendidos = $conexion->query("
     SELECT c.*, COUNT(i.ID) as total_ventas 
-    FROM Cursos c
+    FROM cursos c
     LEFT JOIN Inscripciones i ON c.ID = i.IDCurso
     WHERE i.Estado = 1
     GROUP BY c.ID
@@ -12,7 +12,7 @@ $cursos_mas_vendidos = $conexion->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 $cursos_destacados = $conexion->query("
-    SELECT * FROM Cursos 
+    SELECT * FROM cursos 
     ORDER BY ID DESC
     LIMIT 4
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -39,7 +39,7 @@ include("header.php");
                 <div class="col">
                     <div class="card h-100 shadow-sm">
                         <?php if (!empty($curso['Imagen'])): ?>
-                            <img src="Cursos/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($curso['Nombre']) ?>">
+                            <img src="Cursos_Usuario/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($curso['Nombre']) ?>">
                         <?php else: ?>
                             <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
                                 <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
@@ -79,7 +79,7 @@ include("header.php");
                             <tr>
                                 <td>
                                     <?php if (!empty($curso['Imagen'])): ?>
-                                        <img src="Cursos/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" width="50" height="50" style="object-fit: cover;" class="rounded" alt="<?= htmlspecialchars($curso['Nombre']) ?>">
+                                        <img src="Cursos_Usuario/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" width="50" height="50" style="object-fit: cover;" class="rounded" alt="<?= htmlspecialchars($curso['Nombre']) ?>">
                                     <?php else: ?>
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                             <i class="bi bi-book text-muted"></i>

@@ -8,9 +8,21 @@ if ($host === 'localhost' || $host === '127.0.0.1') {
 } else {
     $url_base = $protocolo . "://" . $host . "/";
 }
-if (session_status() !== PHP_SESSION_ACTIVE) { 
-    session_start(); 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
 }
+$rol_usuario = null;
+if (isset($_SESSION['user_id']) && isset($conexion) && $conexion) {
+    $stmt = $conexion->prepare("SELECT IDRol FROM Usuarios WHERE ID = :id");
+    $stmt->execute([':id' => $_SESSION['user_id']]);
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($usuario) {
+        $rol_usuario = (int)$usuario['IDRol'];
+    }
+}
+define('ROL_ESTUDIANTE', 1);
+define('ROL_ADMIN', 2);
+define('ROL_PROFESOR', 3);
 ?>
 <!doctype html>
 <html lang="es">
@@ -28,31 +40,26 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $url_base ?>dashboard.php">Inicio</a>
                 </li>
-                <?php if(isset($_SESSION['user_id'])): 
-                    $id_usuario = $_SESSION['user_id'];
-                    if(isset($conexion) && $conexion) {
-                        $sentencia = $conexion->prepare("SELECT IDRol FROM Usuarios WHERE ID = :id");
-                        $sentencia->execute([':id' => $id_usuario]);
-                        $usuario = $sentencia->fetch(PDO::FETCH_ASSOC);
-                        $esAdmin = ($usuario && $usuario['IDRol'] == 2); 
-                    } else {
-                        $esAdmin = false; 
-                    }
-                    if($esAdmin): ?>
-                        <!-- <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Roles/rol.php">Roles</a></li> -->
+
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php if ($rol_usuario === ROL_ADMIN): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Usuarios/usuarios.php">Usuarios</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>planes/index.php">Planes</a></li>
-                       <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos/index.php">Cursos</a></li> 
-                       <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Contenido/index.php">Contenido</a></li>
-                       <!-- <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Inscripciones/index.php">Inscripciones</a></li> --> 
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos/index.php">Cursos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones</a></li>
+                    <?php elseif ($rol_usuario === ROL_PROFESOR): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos_Usuario/index.php">Mis Cursos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones</a></li>
+                    <?php elseif ($rol_usuario === ROL_ESTUDIANTE): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos_Usuario/index.php">Mis Cursos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones</a></li>
                     <?php endif; ?>
-                    <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos_Usuario/index.php">Mis Cursos</a></li>
-                    <!-- <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Productos/index.php">Productos</a></li> -->
-                    <!-- <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Carrito/index.php">Carrito</a></li> -->
+                    <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Datos_personales/index.php">Perfil</a></li>
                 <?php endif; ?>
             </ul>
+
             <ul class="navbar-nav ms-auto">
-                <?php if(isset($_SESSION['correo'])): ?>
+                <?php if (isset($_SESSION['correo'])): ?>
                     <li class="nav-item"><span class="navbar-text"><?= htmlspecialchars($_SESSION['correo']) ?></span></li>
                 <?php endif; ?>
                 <li class="nav-item">
