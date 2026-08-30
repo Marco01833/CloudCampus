@@ -253,3 +253,49 @@ VALUES
 ('estudiante@gmail.com', '$2y$10$MO.YyljvwPgJh6.7XTC4h.MJNMr9EH0yRGlGF/6ZmMhBDnOWT.TIS', 1, 1, 1, 1);
 
 
+CREATE TABLE certificados (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDUsuario INT NOT NULL,
+    IDCurso INT NOT NULL,
+    fecha_emision DATETIME DEFAULT CURRENT_TIMESTAMP,
+    codigo VARCHAR(50) UNIQUE,
+    archivo_pdf VARCHAR(255),
+    FOREIGN KEY (IDUsuario) REFERENCES Usuarios(ID),
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID)
+);
+
+CREATE TABLE progreso_estudiante (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDUsuario INT NOT NULL,
+    IDCurso INT NOT NULL,
+    IDContenido INT NOT NULL,
+    completado BOOLEAN DEFAULT 0,
+    fecha_completado DATETIME NULL,
+    FOREIGN KEY (IDUsuario) REFERENCES Usuarios(ID),
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID),
+    FOREIGN KEY (IDContenido) REFERENCES Contenido(ID)
+);
+
+
+CREATE TABLE IF NOT EXISTS categoria (
+    IDCategoria INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Descripcion VARCHAR(255)
+);
+
+
+ALTER TABLE cursos 
+ADD COLUMN nivel ENUM('Básico', 'Intermedio', 'Avanzado') DEFAULT 'Básico' AFTER Precio,
+ADD COLUMN IDCategoria INT NULL AFTER nivel;
+
+ALTER TABLE cursos 
+ADD CONSTRAINT fk_cursos_categoria 
+FOREIGN KEY (IDCategoria) REFERENCES categoria(IDCategoria) 
+ON DELETE SET NULL ON UPDATE CASCADE;
+
+INSERT INTO categoria (Nombre, Descripcion) VALUES
+('Programación', 'Cursos de lenguajes y desarrollo de software'),
+('Diseño', 'Cursos de diseño gráfico y UX/UI'),
+('Negocios', 'Cursos de administración y emprendimiento');
+
+ALTER TABLE Inscripciones ADD COLUMN progreso DECIMAL(5,2) DEFAULT 0;

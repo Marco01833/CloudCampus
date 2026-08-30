@@ -45,13 +45,22 @@ define('ROL_PROFESOR', 3);
                     <?php if ($rol_usuario === ROL_ADMIN): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Usuarios/usuarios.php">Usuarios</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>planes/index.php">Planes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Categorias/index.php">Categorías</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos/index.php">Cursos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Reportes/index.php">Reportes</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones</a></li>
+
                     <?php elseif ($rol_usuario === ROL_PROFESOR): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos_Usuario/index.php">Mis Cursos</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Contenido/index.php">Contenido</a></li>
                     <?php elseif ($rol_usuario === ROL_ESTUDIANTE): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Cursos_Usuario/index.php">Mis Cursos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Productos/index.php">Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Carrito/index.php">Carrito</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>planes/actualizar.php">Actualizar Plan</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Factura/index.php">Facturas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Certificados/index.php">Mis certificados</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>sesiones/historial.php">Sesiones</a></li>
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="<?= $url_base ?>Datos_personales/index.php">Perfil</a></li>

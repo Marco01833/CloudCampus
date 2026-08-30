@@ -7,7 +7,7 @@ $error = null;
 $token = $_GET['token'] ?? '';
 $codigo = $_POST['codigo'] ?? '';
 $correo_reenvio = $_POST['correo_reenvio'] ?? '';
-$correo_prefill = $_GET['correo'] ?? ''; // para prellenar el campo
+$correo_prefill = $_GET['correo'] ?? ''; 
 
 if ($token !== '') {
     try {
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reenviar'])) {
 
                 $nuevo_token = bin2hex(random_bytes(32));
                 $nuevo_codigo = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                $expiracion = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                $expiracion = date('Y-m-d H:i:s', strtotime('1 minutes'));
 
                 $ins = $conexion->prepare('INSERT INTO verificacion_email (user_id, token, codigo, fecha_expiracion) VALUES (:uid, :tok, :cod, :exp)');
                 $ins->execute([':uid' => $user['ID'], ':tok' => $nuevo_token, ':cod' => $nuevo_codigo, ':exp' => $expiracion]);
