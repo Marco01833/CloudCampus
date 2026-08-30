@@ -1,7 +1,6 @@
 <?php
 include("../autenticacion.php");
 include("../bd.php");
-
 $IDCurso = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($IDCurso <= 0) {
     header("Location: ../Cursos/index.php");
@@ -11,13 +10,11 @@ $Titulo = '';
 $Tipo = '';
 $Archivo = '';
 $Bloqueado = 1;
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $Titulo = trim($_POST['Titulo'] ?? '');
     $Tipo = $_POST['Tipo'] ?? '';
     $Bloqueado = isset($_POST['Bloqueado']) ? (int)$_POST['Bloqueado'] : 1;
     $Archivo = '';
-
     if ($Tipo == 'archivo') {
         if (isset($_FILES["archivo"]["name"]) && $_FILES["archivo"]["name"] != '') {
             $fecha = new DateTime();
@@ -169,5 +166,4 @@ function mostrarCampoAdecuado() {
 }
 document.addEventListener('DOMContentLoaded', mostrarCampoAdecuado);
 </script>
-
 <?php include("../footer.php"); ?>

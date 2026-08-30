@@ -1,27 +1,133 @@
-<?php include("../autenticacion.php");
+<?php
+include("../autenticacion.php");
 include("../bd.php");
 
-$filtro_rol = isset($_GET['rol']) ? (int)$_GET['rol'] : 0; 
+$filtro_rol = isset($_GET['rol']) ? (int)$_GET['rol'] : 0;
 $roles_validos = [0, 1, 2, 3];
 if (!in_array($filtro_rol, $roles_validos)) $filtro_rol = 0;
 
-if(isset($_GET['accion']) && $_GET['accion'] == 'eliminar' && isset($_GET['id'])){
+if (isset($_GET['accion']) && $_GET['accion'] == 'eliminar' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
-    $sentencia = $conexion->prepare("DELETE FROM Usuarios WHERE ID = :id");
-    $sentencia->bindParam(":id", $id);
-    $sentencia->execute();
-    $mensaje = "Registro eliminado";
-    header("Location: usuarios.php?mensaje=".urlencode($mensaje));
-    exit;
+    
+    $check = $conexion->prepare("SELECT ID, IDRol FROM Usuarios WHERE ID = ?");
+    $check->execute([$id]);
+    $usuario_data = $check->fetch(PDO::FETCH_ASSOC);
+    if (!$usuario_data) {
+        header("Location: usuarios.php?mensaje=" . urlencode("Usuario no encontrado"));
+        exit;
+    }
+
+    if ($usuario_data['IDRol'] == 2) {
+        $mensaje = "No se puede eliminar a un administrador.";
+        header("Location: usuarios.php?mensaje=" . urlencode($mensaje));
+        exit;
+    }
+
+    if ($usuario_data['IDRol'] == 3) {
+        $stmt = $conexion->prepare("SELECT COUNT(*) FROM Inscripciones i JOIN cursos c ON i.IDCurso = c.ID WHERE c.IDUsuario = ?");
+        $stmt->execute([$id]);
+        $num_inscripciones = $stmt->fetchColumn();
+        if ($num_inscripciones > 0) {
+            $mensaje = "No se puede eliminar al profesor porque tiene cursos con inscripciones";
+            header("Location: usuarios.php?mensaje=" . urlencode($mensaje));
+            exit;
+        }
+    }
+
+    try {
+        $conexion->beginTransaction();
+        $stmt = $conexion->prepare("DELETE FROM verificacion_email WHERE user_id = ?");
+        $stmt->execute([$id]);
+        $stmt = $conexion->prepare("DELETE FROM restablecer_contrasena WHERE user_id = ?");
+        $stmt->execute([$id]);
+
+        $stmt = $conexion->prepare("DELETE FROM SesionesActivas WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+        $stmt = $conexion->prepare("DELETE FROM Suscripciones WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+
+        $stmt = $conexion->prepare("SELECT ID FROM Facturas WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+        $facturas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        if ($facturas) {
+            $placeholders = implode(',', array_fill(0, count($facturas), '?'));
+            $stmt = $conexion->prepare("DELETE FROM DetalleFactura WHERE IDFactura IN ($placeholders)");
+            $stmt->execute($facturas);
+            $stmt = $conexion->prepare("DELETE FROM Facturas WHERE IDUsuario = ?");
+            $stmt->execute([$id]);
+        }
+
+        $stmt = $conexion->prepare("DELETE FROM Inscripciones WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+
+        $stmt = $conexion->prepare("DELETE FROM NotasCurso WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+        $stmt = $conexion->prepare("DELETE FROM progreso_estudiante WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+
+        $stmt = $conexion->prepare("SELECT ID FROM IntentosCuestionario WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+        $intentos = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        if ($intentos) {
+            $placeholders = implode(',', array_fill(0, count($intentos), '?'));
+            $stmt = $conexion->prepare("DELETE FROM RespuestasUsuario WHERE IDIntento IN ($placeholders)");
+            $stmt->execute($intentos);
+            $stmt = $conexion->prepare("DELETE FROM IntentosCuestionario WHERE IDUsuario = ?");
+            $stmt->execute([$id]);
+        }
+
+        $stmt = $conexion->prepare("DELETE FROM certificados WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+        $stmt = $conexion->prepare("SELECT ID FROM Cuestionarios WHERE IDCreador = ?");
+        $stmt->execute([$id]);
+        $cuestionarios = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        if ($cuestionarios) {
+            $placeholders = implode(',', array_fill(0, count($cuestionarios), '?'));
+            $stmt = $conexion->prepare("DELETE FROM Opciones WHERE IDPregunta IN (SELECT ID FROM Preguntas WHERE IDCuestionario IN ($placeholders))");
+            $stmt->execute($cuestionarios);
+            $stmt = $conexion->prepare("DELETE FROM Preguntas WHERE IDCuestionario IN ($placeholders)");
+            $stmt->execute($cuestionarios);
+            $stmt = $conexion->prepare("DELETE FROM Cuestionarios WHERE IDCreador = ?");
+            $stmt->execute([$id]);
+        }
+
+        $stmt = $conexion->prepare("SELECT ID FROM cursos WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+        $cursos = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        if ($cursos) {
+            $placeholders = implode(',', array_fill(0, count($cursos), '?'));
+            $stmt = $conexion->prepare("DELETE FROM Contenido WHERE IDCurso IN ($placeholders)");
+            $stmt->execute($cursos);
+            $stmt = $conexion->prepare("DELETE FROM cursos WHERE IDUsuario = ?");
+            $stmt->execute([$id]);
+        }
+
+        $stmt = $conexion->prepare("DELETE FROM DatosPersonales WHERE IDUsuario = ?");
+        $stmt->execute([$id]);
+
+        $stmt = $conexion->prepare("DELETE FROM Usuarios WHERE ID = ?");
+        $stmt->execute([$id]);
+
+        $conexion->commit();
+        $mensaje = "Usuario eliminado correctamente junto con todos sus datos asociados.";
+        header("Location: usuarios.php?mensaje=" . urlencode($mensaje));
+        exit;
+
+    } catch (PDOException $e) {
+        $conexion->rollBack();
+        $mensaje = "Error al eliminar el usuario: " . $e->getMessage();
+        header("Location: usuarios.php?mensaje=" . urlencode($mensaje));
+        exit;
+    }
 }
 
-if(isset($_GET['accion']) && $_GET['accion'] == 'cambiar_estado' && isset($_GET['id'])){
+if (isset($_GET['accion']) && $_GET['accion'] == 'cambiar_estado' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $sentencia = $conexion->prepare("SELECT Estado FROM Usuarios WHERE ID = :id");
     $sentencia->bindParam(":id", $id);
     $sentencia->execute();
     $usuario = $sentencia->fetch(PDO::FETCH_ASSOC);
-    if($usuario){
+    if ($usuario) {
         $nuevo_estado = ($usuario['Estado'] == 1) ? 0 : 1;
         $sentencia = $conexion->prepare("UPDATE Usuarios SET Estado = :estado WHERE ID = :id");
         $sentencia->bindParam(":estado", $nuevo_estado);
@@ -32,7 +138,7 @@ if(isset($_GET['accion']) && $_GET['accion'] == 'cambiar_estado' && isset($_GET[
     } else {
         $mensaje = "Usuario no encontrado.";
     }
-    header("Location: usuarios.php?mensaje=".urlencode($mensaje));
+    header("Location: usuarios.php?mensaje=" . urlencode($mensaje));
     exit;
 }
 
@@ -49,7 +155,7 @@ $lista_usuarios = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 include("../header.php");
 ?>
 
-<?php if(isset($_GET['mensaje'])) { ?>
+<?php if (isset($_GET['mensaje'])) { ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="bi bi-check-circle"></i>
         <?php echo htmlspecialchars($_GET['mensaje']); ?>
@@ -99,7 +205,7 @@ include("../header.php");
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach($lista_usuarios as $registro): 
+                    <?php foreach ($lista_usuarios as $registro):
                         $bloqueo_texto = '0';
                         if ($registro['bloqueado_hasta']) {
                             $ahora = new DateTime();
@@ -108,8 +214,6 @@ include("../header.php");
                                 $diferencia = $ahora->diff($bloqueo);
                                 $minutos = ($diferencia->h * 60) + $diferencia->i;
                                 $bloqueo_texto = $minutos;
-                            } else {
-                                $bloqueo_texto = '0';
                             }
                         }
                     ?>
@@ -124,16 +228,25 @@ include("../header.php");
                         <td><?php echo $bloqueo_texto; ?></td>
                         <td><?php echo ($registro['Estado'] == 1) ? 'HABILITADO' : 'INHABILITADO'; ?></td>
                         <td>
-                            
-                            <a class="btn btn-outline-danger" href="usuarios.php?accion=eliminar&id=<?php echo $registro['ID']; ?>" 
-                               onclick="return confirm('¿Está seguro de eliminar este usuario?')" role="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                            <a class="btn btn-outline-success" href="editar.php?txtID=<?php echo $registro['ID']; ?>" role="button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 .999z"/>
                                 </svg>
                             </a>
+
+                            <?php if ($registro['IDRol'] != 2): ?>
+                                <a class="btn btn-outline-danger" href="usuarios.php?accion=eliminar&id=<?php echo $registro['ID']; ?>" 
+                                   onclick="return confirm('⚠️ ¿Estás seguro de eliminar permanentemente este usuario?\n\nSe eliminarán TODOS sus datos:\n• Datos personales\n• Sesiones activas\n• Suscripciones\n• Facturas y detalles\n• Inscripciones a cursos\n• Progreso y notas\n• Certificados\n• Cursos creados (con su contenido)\n• Cuestionarios creados\n• Intentos de cuestionarios\n• Correos de verificación y restablecimiento\n\nEsta acción es irreversible.')" role="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                    </svg>
+                                </a>
+                            <?php endif; ?>
+
                             <a class="btn btn-outline-primary" href="usuarios.php?accion=cambiar_estado&id=<?php echo $registro['ID']; ?>" 
-                               onclick="return confirm('¿Está seguro de cambiar el estado?')" role="button">
+                               onclick="return confirm('¿Estás seguro de cambiar el estado del usuario?')" role="button">
                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
                                     <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
                                     <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>

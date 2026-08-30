@@ -1,4 +1,50 @@
 <?php
+include("../bd.php");
+include("../autenticacion.php");
+$txtID = isset($_GET['txtID']) ? (int)$_GET['txtID'] : 0;
+$id_curso = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+if ($txtID > 0) {
+    $sql = "SELECT c.*, cu.IDUsuario 
+            FROM Contenido c
+            LEFT JOIN Cursos cu ON c.IDCurso = cu.ID
+            WHERE c.ID = ?";
+    $stmt = $conexion->prepare($sql);
+    $stmt->execute([$txtID]);
+    $contenido_unico = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($contenido_unico) {
+        $contenidos = [$contenido_unico];
+        $id_curso = $contenido_unico['IDCurso']; 
+    } else {
+        $contenidos = [];
+    }
+} else {
+    if ($id_curso > 0) {
+        $sql = "SELECT * FROM Contenido WHERE IDCurso = ? ORDER BY ID ASC";
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute([$id_curso]);
+        $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $contenidos = [];
+    }
+}
+
+$rol_usuario = $_SESSION['rol'] ?? 0;
+$esAdmin = ($rol_usuario == 2);
+
+if ($txtID > 0 && isset($contenido_unico) && $contenido_unico) {
+    $esProfesor = ($contenido_unico['IDUsuario'] == $_SESSION['user_id']);
+} else if ($id_curso > 0) {
+    $sql_curso = "SELECT IDUsuario FROM cursos WHERE ID = ?";
+    $stmt_curso = $conexion->prepare($sql_curso);
+    $stmt_curso->execute([$id_curso]);
+    $curso = $stmt_curso->fetch(PDO::FETCH_ASSOC);
+    $esProfesor = ($curso && $curso['IDUsuario'] == $_SESSION['user_id']);
+} else {
+    $esProfesor = false;
+}
+
 function obtenerRutaArchivo($tipo, $nombreArchivo) {
     $directorioBase = '../Cursos_Usuario/';
     $subdirectorio = ($tipo === 'video') ? 'Video/' : 'Archivos/';
@@ -6,6 +52,7 @@ function obtenerRutaArchivo($tipo, $nombreArchivo) {
     if (file_exists($rutaCompleta)) return $rutaCompleta;
     return $nombreArchivo;
 }
+
 function obtenerTipoMIME($archivo) {
     $extension = strtolower(pathinfo($archivo, PATHINFO_EXTENSION));
     $tipos = [
@@ -29,27 +76,25 @@ function obtenerTipoMIME($archivo) {
     ];
     return $tipos[$extension] ?? 'application/octet-stream';
 }
+
 function formatFileSize($bytes) {
     if ($bytes <= 0) return '0 B';
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $i = floor(log($bytes, 1024));
     return round($bytes / (1024 ** $i), 2) . ' ' . $units[$i];
 }
-$sql = "SELECT * FROM Contenido WHERE IDCurso = ? ORDER BY ID ASC";
-$stmt = $conexion->prepare($sql);
-$stmt->execute([$id_curso]);
-$contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Contenido del curso:</h5>
-        <?php if ($puedeEditar): ?>
+        <?php if ($esProfesor): ?>
             <a href="agregarcontenido.php?id=<?= $id_curso ?>" class="btn btn-success btn-sm">
                 <i class="bi bi-plus-circle"></i> Agregar contenido
             </a>
         <?php endif; ?>
     </div>
+
     <?php if (empty($contenidos)): ?>
         <div class="alert alert-info">Este curso aún no tiene contenido disponible.</div>
     <?php else: ?>
@@ -71,10 +116,10 @@ $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="fw-bold"><?= htmlspecialchars($contenido['Titulo']) ?></span>
                         <div>
-                            <?php if ($puedeEditar): ?>
-                                <button type="button" class="btn btn-warning btn-sm me-1" onclick="habilitarEdicionContenido(<?= $contenido['ID'] ?>)">
+                            <?php if ($esProfesor): ?>
+                                <a href="editarcontenido.php?txtID=<?= $contenido['ID'] ?>&id_curso=<?= $id_curso ?>" class="btn btn-warning btn-sm me-1">
                                     <i class="bi bi-pencil-square"></i> Editar
-                                </button>
+                                </a>
                                 <a href="contenido.php?txtID=<?= $contenido['ID'] ?>&id=<?= $id_curso ?>" 
                                    class="btn btn-danger btn-sm" 
                                    onclick="return confirm('¿Está seguro de eliminar este contenido?')">
@@ -95,60 +140,7 @@ $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <span class="fw-bold"><?= ($contenido['Bloqueado'] == 1) ? 'Bloqueado' : 'Desbloqueado' ?></span>
                     </div>
                 </div>
-                <div id="edicion_<?= $contenido['ID'] ?>" style="display:none;">
-                    <form method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="editar_contenido" value="1">
-                        <input type="hidden" name="id_contenido" value="<?= $contenido['ID'] ?>">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Título:</label>
-                            <input type="text" class="form-control form-control-sm" 
-                                   name="titulo_contenido" 
-                                   value="<?= htmlspecialchars($contenido['Titulo']) ?>" 
-                                   id="inputTitulo_<?= $contenido['ID'] ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tipo:</label>
-                            <select class="form-select form-select-sm" 
-                                    name="tipo_contenido" 
-                                    id="selectTipo_<?= $contenido['ID'] ?>">
-                                <option value="video" <?= ($contenido['Tipo'] == 'video') ? 'selected' : '' ?>>Video</option>
-                                <option value="archivo" <?= ($contenido['Tipo'] == 'archivo') ? 'selected' : '' ?>>Archivo</option>
-                                <option value="enlace" <?= ($contenido['Tipo'] == 'enlace') ? 'selected' : '' ?>>Enlace</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Archivo:</label>
-                            <input type="file" class="form-control form-control-sm" 
-                                   name="archivo_contenido" 
-                                   id="inputFile_<?= $contenido['ID'] ?>" 
-                                   accept="<?= ($contenido['Tipo'] == 'video') ? 'video/*' : '*/*' ?>" 
-                                   style="<?= ($contenido['Tipo'] == 'enlace') ? 'display:none;' : '' ?>">
-                            <input type="text" class="form-control form-control-sm" 
-                                   name="archivo_contenido" 
-                                   value="<?= ($contenido['Tipo'] == 'enlace') ? htmlspecialchars($contenido['Archivo']) : '' ?>" 
-                                   id="inputText_<?= $contenido['ID'] ?>" 
-                                   placeholder="https://ejemplo.com"
-                                   style="<?= ($contenido['Tipo'] == 'enlace') ? '' : 'display:none;' ?>">
-                            <small class="text-muted">Deje en blanco para mantener el archivo actual.</small>
-                        </div>
 
-                        <!-- Bloqueado -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Bloqueado:</label>
-                            <select class="form-select form-select-sm" 
-                                    name="bloqueado_contenido" 
-                                    id="selectBloqueado_<?= $contenido['ID'] ?>">
-                                <option value="1" <?= ($contenido['Bloqueado'] == 1) ? 'selected' : '' ?>>Sí</option>
-                                <option value="0" <?= ($contenido['Bloqueado'] == 0) ? 'selected' : '' ?>>No</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <button type="submit" class="btn btn-success btn-sm">Guardar</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="cancelarEdicionContenido(<?= $contenido['ID'] ?>)">Cancelar</button>
-                        </div>
-                    </form>
-                </div>
                 <?php if ($contenido['Tipo'] === 'video'): ?>
                     <?php if (strpos($rutaArchivo, 'youtube.com') !== false || strpos($rutaArchivo, 'youtu.be') !== false): 
                         $video_id = '';
@@ -189,6 +181,7 @@ $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         <?php endif; ?>
                     <?php endif; ?>
+
                 <?php elseif ($contenido['Tipo'] === 'archivo'): 
                     $nombreArchivo = basename($rutaArchivo);
                     $extension = strtolower(pathinfo($nombreArchivo, PATHINFO_EXTENSION));
@@ -238,7 +231,7 @@ $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php endif; ?>
                         </div>
                     </div>
-                
+
                 <?php elseif ($contenido['Tipo'] === 'enlace'): 
                     $esYoutube = (strpos($contenido['Archivo'], 'youtube.com') !== false || strpos($contenido['Archivo'], 'youtu.be') !== false);
                     if ($esYoutube): 
@@ -267,51 +260,46 @@ $contenidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
+
+                 
+                <?php
+                $stmt_cuestionario = $conexion->prepare("SELECT ID, Titulo FROM Cuestionarios WHERE IDContenido = ?");
+                $stmt_cuestionario->execute([$contenido['ID']]);
+                $cuestionario = $stmt_cuestionario->fetch(PDO::FETCH_ASSOC);
+                
+                if ($cuestionario): ?>
+                <h5 class="">Cuestionario:</h5>
+                    <div class="mt-2 d-flex gap-2 flex-wrap">
+                        <a href="Cuestionarios/cuestionario.php?cuestionario_id=<?= $cuestionario['ID'] ?>" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-question-circle"></i> <?= htmlspecialchars($cuestionario['Titulo']) ?>
+                        </a>
+                        <?php if ($esProfesor): ?>
+                            <a href="Cuestionarios/editar_cuestionario.php?cuestionario_id=<?= $cuestionario['ID'] ?>" class="btn btn-outline-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="Cuestionarios/gestionar_preguntas.php?cuestionario_id=<?= $cuestionario['ID'] ?>" class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-list-ul"></i> Gestionar preguntas
+                            </a>
+                            <a href="Cuestionarios/eliminar_cuestionario.php?id=<?= $cuestionario['ID'] ?>&id_curso=<?= $id_curso ?>" 
+                            class="btn btn-outline-danger btn-sm" 
+                            onclick="return confirm('¿Eliminar este cuestionario y todos sus datos (preguntas, intentos, respuestas)?')">
+                            <i class="bi bi-trash"></i> Eliminar</a>
+                        <?php endif; ?>
+                    </div>
+                <?php else: ?>
+                    <?php if ($esProfesor): ?>
+                        <div class="mt-2">
+                            <a href="Cuestionarios/crear_cuestionario.php?id_contenido=<?= $contenido['ID'] ?>" class="btn btn-success btn-sm">
+                                <i class="bi bi-plus-circle"></i> Crear Cuestionario
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
-
-<script>
-function habilitarEdicionContenido(id) {
-    document.getElementById('vista_' + id).style.display = 'none';
-    document.getElementById('edicion_' + id).style.display = 'block';
-    const tipoSelect = document.getElementById('selectTipo_' + id);
-    const tipoActual = tipoSelect.value;
-    const fileInput = document.getElementById('inputFile_' + id);
-    const textInput = document.getElementById('inputText_' + id);
-    if (tipoActual === 'enlace') {
-        fileInput.style.display = 'none';
-        textInput.style.display = 'block';
-    } else {
-        textInput.style.display = 'none';
-        fileInput.style.display = 'block';
-    }
-}
-
-function cancelarEdicionContenido(id) {
-    location.reload();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('select[id^="selectTipo_"]').forEach(function(select) {
-        const id = select.id.replace('selectTipo_', '');
-        select.addEventListener('change', function() {
-            const tipo = this.value;
-            const fileInput = document.getElementById('inputFile_' + id);
-            const textInput = document.getElementById('inputText_' + id);
-            if (tipo === 'enlace') {
-                fileInput.style.display = 'none';
-                textInput.style.display = 'block';
-            } else {
-                textInput.style.display = 'none';
-                fileInput.style.display = 'block';
-            }
-        });
-    });
-});
-</script>
 
 <style>
     .list-group-item {

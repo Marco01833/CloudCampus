@@ -60,7 +60,6 @@ if($_POST){
                 <input type="number" step="0.01" class="form-control form-control-lg" name="Descuento" id="Descuento" 
                        placeholder="0.00" value="0.00">
             </div>
-
             <button type="submit" class="btn btn-success btn-lg">Guardar</button>
             <a href="index.php" class="btn btn-primary btn-lg" role="button">Cancelar</a>
         </form>

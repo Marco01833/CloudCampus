@@ -1,8 +1,27 @@
 <?php
 include("../autenticacion.php");
 include("../bd.php");
+include("../funciones_progreso.php");
+
 $id_usuario = $_SESSION['user_id'];
 $rol_usuario = $_SESSION['rol'] ?? 0;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quitar_curso']) && $rol_usuario == 1) {
+    $id_curso = (int)$_POST['id_curso'];
+    if ($id_curso > 0) {
+        $check = $conexion->prepare("SELECT ID FROM Inscripciones WHERE IDUsuario = ? AND IDCurso = ? AND Estado = 1");
+        $check->execute([$id_usuario, $id_curso]);
+        if ($check->fetch()) {
+            $update = $conexion->prepare("UPDATE Inscripciones SET Estado = 0 WHERE IDUsuario = ? AND IDCurso = ?");
+            $update->execute([$id_usuario, $id_curso]);
+            $mensaje_exito = "Curso eliminado de tu lista correctamente.";
+        } else {
+            $mensaje_error = "No se encontró una inscripción activa para este curso.";
+        }
+    } else {
+        $mensaje_error = "ID de curso inválido.";
+    }
+}
 
 if ($rol_usuario == 2 || $rol_usuario == 3) {
     $consulta = "SELECT 
@@ -20,10 +39,12 @@ if ($rol_usuario == 2 || $rol_usuario == 3) {
                     c.Nombre AS nombre_curso, 
                     c.Descripcion AS Descripcion, 
                     c.Imagen AS Imagen,
-                    i.FechaInscripcion AS FechaInscripcion
+                    i.FechaInscripcion AS FechaInscripcion,
+                    i.progreso AS progreso
                 FROM Inscripciones i
                 JOIN cursos c ON i.IDCurso = c.ID
                 WHERE i.IDUsuario = :id_usuario
+                  AND i.Estado = 1
                 ORDER BY i.FechaInscripcion DESC";
 }
 $sentencia = $conexion->prepare($consulta);
@@ -34,6 +55,18 @@ $cursos = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 include("../header.php");
 ?>
 <div class="container mt-4">
+    <?php if (isset($mensaje_exito)): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars($mensaje_exito) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($mensaje_error)): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars($mensaje_error) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
     <div class="card">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="bi bi-book"></i> <?= ($rol_usuario == 2 || $rol_usuario == 3) ? 'Mis Cursos' : 'Mis Cursos Inscritos' ?></h4>
@@ -76,10 +109,36 @@ include("../header.php");
                                     <p class="card-text"><?= htmlspecialchars($curso['Descripcion'] ?? ''); ?></p>
                                     <?php if ($rol_usuario == 2 || $rol_usuario == 3): ?>
                                         <p class="card-text"><strong>Estado:</strong> <?= htmlspecialchars($curso['Estado'] ?? ''); ?></p>
+                                    <?php else: ?>
+                                        <!-- Barra de progreso para estudiantes -->
+                                        <div class="mt-2">
+                                            <small class="text-muted">Progreso:</small>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar progress-bar-striped bg-info" 
+                                                     role="progressbar" 
+                                                     style="width: <?= $curso['progreso'] ?? 0 ?>%;" 
+                                                     aria-valuenow="<?= $curso['progreso'] ?? 0 ?>" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted"><?= number_format($curso['progreso'] ?? 0, 0) ?>%</small>
+                                        </div>
                                     <?php endif; ?>
-                                    <a href="contenido.php?id=<?= $curso['ID']; ?>" class="btn btn-primary mt-2">
-                                        <i class="bi bi-play-circle"></i> Ver Contenido
-                                    </a>
+                                    
+                                    <div class="d-flex gap-2 mt-2">
+                                        <a href="contenido.php?id=<?= $curso['ID']; ?>" class="btn btn-primary">
+                                            <i class="bi bi-play-circle"></i> Ver Contenido
+                                        </a>
+                                        <?php if ($rol_usuario == 1): ?>
+                                            <form method="post" onsubmit="return confirm('¿Está seguro de que desea quitar este curso de su lista?')">
+                                                <input type="hidden" name="id_curso" value="<?= $curso['ID']; ?>">
+                                                <button type="submit" name="quitar_curso" class="btn btn-danger">
+                                                    <i class="bi bi-x-circle"></i> Quitar curso
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
