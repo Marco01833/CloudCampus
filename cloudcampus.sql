@@ -98,7 +98,7 @@ CREATE TABLE Inscripciones (
     Metodo VARCHAR(50),
     IDPlan INT NOT NULL,  
     FOREIGN KEY (IDUsuario) REFERENCES Usuarios(ID) ,
-    FOREIGN KEY (IDCurso) REFERENCES Cursos(ID),
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID),
     FOREIGN KEY (IDPlan) REFERENCES Planes(ID)
 );
 
@@ -110,7 +110,7 @@ CREATE TABLE Contenido (
     Archivo VARCHAR(255) NOT NULL,
     OrdenContenido INT NOT NULL,  
     Bloqueado BOOLEAN DEFAULT 1, 
-    FOREIGN KEY (IDCurso) REFERENCES Cursos(ID) 
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID) 
 );
 
 CREATE TABLE DetalleRolesPermisos (
@@ -171,9 +171,9 @@ CREATE TABLE Cuestionarios (
     Descripcion VARCHAR(255) NULL,
     CantidadPreguntas INT NULL, 
     TiempoLimite INT NULL, 
-    FOREIGN KEY (IDCurso) REFERENCES Cursos(ID),
-    FOREIGN KEY (IDCreador) REFERENCES Usuarios(ID),
-    FOREIGN KEY (IDContenido) REFERENCES Contenido(ID) 
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID),
+    FOREIGN KEY (IDCreador) REFERENCES usuarios(ID),
+    FOREIGN KEY (IDContenido) REFERENCES contenido(ID) 
 );
 
 
@@ -227,17 +227,11 @@ CREATE TABLE NotasCurso (
     NotaFinal DECIMAL(5,2) NULL,   
     FechaCalculo DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (IDUsuario) REFERENCES Usuarios(ID),
-    FOREIGN KEY (IDCurso) REFERENCES Cursos(ID)
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID)
 );
  
 
 
-
-ALTER TABLE Cursos DROP INDEX IDUsuario;
-
-
-
-ALTER TABLE Cursos DROP INDEX IDUsuario;
 INSERT INTO Roles (ID, Nombre) VALUES
 (1, 'Estudiante'), 
 (2, 'Administrador'),
@@ -299,3 +293,16 @@ INSERT INTO categoria (Nombre, Descripcion) VALUES
 ('Negocios', 'Cursos de administración y emprendimiento');
 
 ALTER TABLE Inscripciones ADD COLUMN progreso DECIMAL(5,2) DEFAULT 0;
+
+
+CREATE TABLE IF NOT EXISTS auditoria_cursos (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    IDCurso INT NOT NULL,
+    IDAdministrador INT NOT NULL,
+    EstadoAnterior VARCHAR(20),
+    EstadoNuevo VARCHAR(20),
+    Motivo TEXT,
+    Fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    -- Claves foráneas (opcionales pero muy recomendables)
+    FOREIGN KEY (IDCurso) REFERENCES cursos(ID) ON DELETE CASCADE,
+    FOREIGN KEY (IDAdministrador) REFERENCES Usuarios(ID) ON DELETE CASCADE

@@ -5,7 +5,7 @@ $cursos_mas_vendidos = $conexion->query("
     SELECT c.*, COUNT(i.ID) as total_ventas 
     FROM cursos c
     LEFT JOIN Inscripciones i ON c.ID = i.IDCurso
-    WHERE i.Estado = 1
+    WHERE c.Estado = 'Aprobado' AND i.Estado = 1
     GROUP BY c.ID
     ORDER BY total_ventas DESC
     LIMIT 5
@@ -13,6 +13,7 @@ $cursos_mas_vendidos = $conexion->query("
 
 $cursos_destacados = $conexion->query("
     SELECT * FROM cursos 
+    WHERE Estado = 'Aprobado'
     ORDER BY ID DESC
     LIMIT 4
 ")->fetchAll(PDO::FETCH_ASSOC);

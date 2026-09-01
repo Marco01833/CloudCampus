@@ -8,7 +8,7 @@ if (!isset($url_base)) {
     <div class="container">
         <div class="row gy-4">
             <div class="col-md-4">
-                <h5 class="fw-bold text-danger">Cloud Campus</h5>
+                <h5 class="fw-bold text-danger">Punto Codigo</h5>
                 <p class="text-muted mb-0">
                     Aprende, crea y desarrolla tus habilidades en línea.
                 </p>
@@ -35,7 +35,7 @@ if (!isset($url_base)) {
 
             <div class="col-md-4">
                 <h6 class="fw-bold">Contacto</h6>
-                <p class="text-muted mb-1">soporte@cloudcampus.com</p>
+                <p class="text-muted mb-1">soporte@puntocodigo.com</p>
                 <p class="text-muted mb-0">Lunes a viernes, 8:00 a 17:00</p>
             </div>
         </div>
@@ -44,7 +44,7 @@ if (!isset($url_base)) {
 
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
             <small class="text-muted">
-                &copy; <?= date('Y') ?> Cloud Campus. Todos los derechos reservados.
+                &copy; <?= date('Y') ?> Punto Codigo. Todos los derechos reservados.
             </small>
 
             <div>
