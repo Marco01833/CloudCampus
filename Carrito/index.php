@@ -117,129 +117,155 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 include("../header.php");
 ?>
+<!DOCTYPE html>
+<html lang="es">
 
-<div class="container py-4">
-    <h1 class="mb-4"> Carrito de Compra</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de cursos — Punto Código</title>
 
-    <?php if ($error): ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
 
-    <?php if (empty($cursos_carrito)): ?>
-        <div class="alert alert-info">
-            Tu carrito está vacío. 
-            <a href="../Productos/index.php" class="alert-link">Explora nuestros cursos</a>.
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <main class="wrap">
+
+        <div class="page-header">
+            <span class="eyebrow">// tu carrito</span>
+            <h1>Carrito de cursos</h1>
+            <p>Revisá los cursos seleccionados antes de continuar con el pago.</p>
         </div>
-    <?php else: ?>
-        <div class="row">
-            <div class="col-md-8">
-                <?php foreach ($cursos_carrito as $curso): 
-                    $profesor_nombre = trim(
-                        ($curso['profesor_nombre'] ?? '') . ' ' . ($curso['profesor_apellidos'] ?? '')
-                    ) ?: 'Profesor';
-                ?>
-                <div class="card mb-3">
-                    <div class="row g-0 align-items-center">
-                        <div class="col-md-3">
-                            <?php if (!empty($curso['Imagen'])): ?>
-                                <img src="../Cursos_Usuario/Imagen/<?= htmlspecialchars($curso['Imagen']) ?>" 
-                                     class="img-fluid rounded-start" style="height: 120px; object-fit: cover; width: 100%;" 
-                                     alt="<?= htmlspecialchars($curso['Nombre']) ?>">
-                            <?php else: ?>
-                                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
-                                    <i class="bi bi-book text-muted" style="font-size: 2rem;"></i>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="col-md-9">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h5 class="card-title"><?= htmlspecialchars($curso['Nombre']) ?></h5>
-                                        <p class="card-text small text-muted">
-                                            <i class="bi bi-person"></i> <?= htmlspecialchars($profesor_nombre) ?>
-                                        </p>
-                                    </div>
-                                    <div class="text-end">
-                                        <p class="fw-bold text-primary">$<?= number_format($curso['Precio'], 2) ?></p>
-                                        <form method="post" class="d-inline">
-                                            <input type="hidden" name="id_curso" value="<?= $curso['ID'] ?>">
-                                            <button type="submit" name="eliminar_curso" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash"></i>Eliminar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: #fee2e2; border: 1px solid #fecaca; color: #991b1b;"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+
+        <div class="cart-layout">
+
+            <div class="cart-items">
+
+                <?php if (empty($cursos_carrito)): ?>
+
+                    <div class="cart-empty">
+                        <i class="fa-solid fa-cart-shopping" style="font-size:2rem; color: var(--muted); margin-bottom:1rem;"></i>
+                        <p>Tu carrito de cursos está vacío.</p>
+                        <a href="../Productos/index.php" class="btn btn-primary" style="margin-top:1rem;">Explorar cursos</a>
+                    </div>
+
+                <?php else: ?>
+
+                    <?php foreach ($cursos_carrito as $curso): 
+                        $profesor = trim(
+                            ($curso['profesor_nombre'] ?? '') . ' ' . ($curso['profesor_apellidos'] ?? '')
+                        ) ?: 'Profesor';
+                        $imagen = !empty($curso['Imagen']) 
+                            ? '../Cursos_Usuario/Imagen/' . htmlspecialchars($curso['Imagen']) 
+                            : 'https://placehold.co/160x120/EFE9E9/6E6864?text=Curso';
+                    ?>
+                    <div class="cart-item">
+                        <img class="cart-item-img" src="<?= $imagen ?>" alt="Miniatura del curso">
+                        <div class="cart-item-info">
+                            <h3><?= htmlspecialchars($curso['Nombre']) ?></h3>
+                            <div class="cart-item-meta">
+                                <span><i class="fa-regular fa-clock"></i> <?= htmlspecialchars($curso['Duracion'] ?? 'N/A') ?></span>
+                                <span><i class="fa-solid fa-signal"></i> <?= htmlspecialchars($curso['nivel'] ?? 'N/A') ?></span>
+                                <span><i class="fa-regular fa-user"></i> <?= htmlspecialchars($profesor) ?></span>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="../Productos/index.php" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Seguir comprando
-                    </a>
-                    <form method="post">
-                        <button type="submit" name="vaciar_carrito" class="btn btn-outline-danger" 
-                                onclick="return confirm('¿Vaciar todo el carrito?')">
-                            <i class="bi bi-cart-x"></i> Vaciar carrito
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Resumen del pedido</h5>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-unstyled">
-                            <li class="d-flex justify-content-between">
-                                <span>Subtotal (<?= count($cursos_carrito) ?> cursos)</span>
-                                <span>$<?= number_format($subtotal, 2) ?></span>
-                            </li>
-                            <?php if ($descuento_porcentaje > 0): ?>
-                                <li class="d-flex justify-content-between text-success">
-                                    <span>Descuento (<?= $descuento_porcentaje ?>%)</span>
-                                    <span>-$<?= number_format($descuento_monto, 2) ?></span>
-                                </li>
-                            <?php endif; ?>
-                            <li class="d-flex justify-content-between fw-bold fs-5 mt-2 pt-2 border-top">
-                                <span>Total</span>
-                                <span>$<?= number_format($total, 2) ?></span>
-                            </li>
-                        </ul>
-
-                        <hr>
-
-                        <form method="post">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Método de pago</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="metodo_pago" id="qr" value="QR" checked>
-                                    <label class="form-check-label" for="qr">Pago con QR</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="metodo_pago" id="tarjeta" value="Tarjeta">
-                                    <label class="form-check-label" for="tarjeta">Pago con tarjeta</label>
-                                </div>
-                            </div>
-                            <button type="submit" name="confirmar_pago" class="btn btn-success w-100">
-                                <i class="bi bi-credit-card"></i> Proceder al pago
+                        <div class="cart-item-price">
+                            $<?= number_format($curso['Precio'], 2) ?>
+                        </div>
+                        <form method="post" style="margin:0;">
+                            <input type="hidden" name="id_curso" value="<?= $curso['ID'] ?>">
+                            <button type="submit" name="eliminar_curso" class="cart-item-remove" aria-label="Quitar curso">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </form>
-
-                        <div class="mt-3 small text-muted">
-                            <i class="bi bi-info-circle"></i> El plan <strong><?= htmlspecialchars($plan_usuario['Nombre'] ?? 'Básico') ?></strong> 
-                            aplica un descuento del <?= $descuento_porcentaje ?>%.
-                        </div>
                     </div>
-                </div>
+                    <?php endforeach; ?>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;">
+                        <a href="../Productos/index.php" class="btn btn-secondary" style="background: var(--surface); border: 1px solid var(--border); color: var(--ink); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none;">
+                            <i class="fa-solid fa-arrow-left"></i> Seguir comprando
+                        </a>
+                        <form method="post">
+                            <button type="submit" name="vaciar_carrito" class="btn btn-outline-danger" style="background: transparent; border: 1px solid #e31e24; color: #e31e24; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer;" onclick="return confirm('¿Vaciar todo el carrito?')">
+                                <i class="fa-solid fa-trash-can"></i> Vaciar carrito
+                            </button>
+                        </form>
+                    </div>
+
+                <?php endif; ?>
+
             </div>
+
+            <aside class="cart-summary">
+                <h2>Resumen del pedido</h2>
+
+                <?php if (!empty($cursos_carrito)): ?>
+
+                    <div class="cart-summary-row">
+                        <span>Subtotal (<?= count($cursos_carrito) ?> cursos)</span>
+                        <span>$<?= number_format($subtotal, 2) ?></span>
+                    </div>
+
+                    <?php if ($descuento_porcentaje > 0): ?>
+                    <div class="cart-summary-row">
+                        <span>Descuento (<?= $descuento_porcentaje ?>%)</span>
+                        <span>-$<?= number_format($descuento_monto, 2) ?></span>
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="cart-summary-row total">
+                        <span>Total</span>
+                        <span>$<?= number_format($total, 2) ?></span>
+                    </div>
+
+                    <hr style="border: 1px solid var(--border); margin: 1rem 0;">
+
+                    <form method="post">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Método de pago</label>
+                            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+                                    <input type="radio" name="metodo_pago" value="QR" checked> Pago con QR
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+                                    <input type="radio" name="metodo_pago" value="Tarjeta"> Pago con tarjeta
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" name="confirmar_pago" class="btn btn-primary" style="width: 100%;">
+                            Proceder al pago <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--muted);">
+                        <i class="fa-solid fa-info-circle"></i> El plan <strong><?= htmlspecialchars($plan_usuario['Nombre'] ?? 'Básico') ?></strong> 
+                        aplica un descuento del <?= $descuento_porcentaje ?>%.
+                    </div>
+
+                <?php else: ?>
+
+                    <p style="color: var(--muted); font-size: 0.9rem;">Tu carrito está vacío.</p>
+
+                <?php endif; ?>
+
+            </aside>
+
         </div>
-    <?php endif; ?>
-</div>
+
+    </main>
+
+</body>
+</html>
 
 <?php include("../footer.php"); ?>
