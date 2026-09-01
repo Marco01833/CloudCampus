@@ -13,29 +13,6 @@ if ($host === 'localhost' || $host === '127.0.0.1') {
     $url_base = $protocolo . "://" . $host . "/";
 }
 
-if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
-    header('Location: ' . $url_base . 'index.php', true, 302);
-    exit;
-}
-
-if (!isset($conexion) || !$conexion) {
-    include_once __DIR__ . '/bd.php';
-}
-
-if (isset($conexion) && $conexion) {
-    if (isset($_SESSION['session_id'])) {
-        $stmt = $conexion->prepare("SELECT Estado FROM SesionesActivas WHERE ID = ? AND IDUsuario = ? LIMIT 1");
-        $stmt->execute([$_SESSION['session_id'], $_SESSION['user_id']]);
-        $sesion_activa = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$sesion_activa || $sesion_activa['Estado'] != 1) {
-            session_destroy();
-            header('Location: ' . $url_base . 'index.php', true, 302);
-            exit;
-        }
-    }
-}
-
 $rol_usuario = null;
 if (isset($_SESSION['user_id']) && isset($conexion) && $conexion) {
     $stmt = $conexion->prepare("SELECT IDRol FROM Usuarios WHERE ID = :id");
