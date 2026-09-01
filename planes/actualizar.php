@@ -162,7 +162,21 @@ include("../header.php");
             <?php if ($suscripcion_activa): ?>
                 <p><strong>Fecha de inicio:</strong> <?= date('d/m/Y', strtotime($suscripcion_activa['FechaInicio'])) ?></p>
                 <?php if ($suscripcion_activa['FechaFin']): ?>
-                    <p><strong>Válido hasta:</strong> <?= date('d/m/Y', strtotime($suscripcion_activa['FechaFin'])) ?></p>
+                    <p><strong>Válido hasta:</strong> <?= date('d/m/Y H:i:s', strtotime($suscripcion_activa['FechaFin'])) ?></p>
+                    <?php 
+                    $fecha_fin_ts = strtotime($suscripcion_activa['FechaFin']);
+                    $now = time();
+                    $restante = max(0, $fecha_fin_ts - $now);
+                    if ($restante > 0): ?>
+                        <div class="mt-3">
+                            <strong>Tiempo restante:</strong>
+                            <span id="countdown" data-seconds="<?= $restante ?>" class="fw-bold text-primary">Calculando...</span>
+                        </div>
+                    <?php else: ?>
+                        <div class="mt-3 text-danger">
+                            <strong>⚠️ Suscripción expirada</strong>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <p><strong>Válido hasta:</strong> Sin fecha de vencimiento (plan básico)</p>
                 <?php endif; ?>
@@ -189,7 +203,7 @@ include("../header.php");
                             <p class="display-6 fw-bold">
                                 $<?= number_format($plan['Precio'], 2) ?>
                                 <?php if ($plan['Descuento'] > 0): ?>
-                                    <span class="badge bg-success"><?= $plan['Descuento'] ?>% descuento en cursos</span>
+                                    <span class="badge bg-success"><?= $plan['Descuento'] ?>% de descuento</span>
                                 <?php endif; ?>
                             </p>
                             <?php if ($plan['DuracionDias']): ?>
@@ -203,7 +217,7 @@ include("../header.php");
                                 <div class="mb-2">
                                     <select name="metodo_pago" class="form-select">
                                         <option value="QR">Pago con QR</option>
-                                        <option value="Efectivo">Pago en efectivo</option>
+                                        <option value="Tarjeta">Pago con tarjeta</option>
                                     </select>
                                 </div>
                                 <button type="submit" name="comprar_plan" class="btn btn-primary">
@@ -217,5 +231,33 @@ include("../header.php");
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const el = document.getElementById('countdown');
+    if (!el) return;
+    let seconds = parseInt(el.dataset.seconds) || 0;
+    function update() {
+        if (seconds <= 0) {
+            el.textContent = '¡Suscripción expirada!';
+            el.className = 'fw-bold text-danger';
+            return;
+        }
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        let parts = [];
+        if (days > 0) parts.push(days + 'd');
+        parts.push(String(hours).padStart(2, '0') + 'h');
+        parts.push(String(minutes).padStart(2, '0') + 'm');
+        parts.push(String(secs).padStart(2, '0') + 's');
+        el.textContent = parts.join(' ');
+        seconds--;
+    }
+    update();
+    setInterval(update, 1000);
+});
+</script>
 
 <?php include("../footer.php"); ?>

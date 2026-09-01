@@ -54,73 +54,95 @@ if ($_POST) {
 
 include("../header.php");
 ?>
-<div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h2 class="mb-4"><i class="bi bi-pencil-square"></i> Editar Usuario</h2>
-            
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Datos del usuario</h5>
+<link rel="stylesheet" href="../css/editar.css">
+
+<div class="admin-wrap">
+    <div class="admin-page-header">
+        <div>
+            <span class="eyebrow">// editar contenido</span>
+            <h1>Editar usuario</h1>
+            <p>Actualizá el correo, rol, verificación y estado del usuario.</p>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <i class="fa-solid fa-pen-to-square"></i> Datos del usuario
+        </div>
+
+        <div class="admin-card-body">
+
+            <form action="" method="post">
+
+                <input type="hidden" name="ID" value="<?= $txtID ?>">
+
+                <div class="field-group">
+                    <label for="Correo">Correo electrónico</label>
+                    <div class="input-wrapper disabled">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" value="<?= htmlspecialchars($Correo ?? '') ?>" 
+                               id="Correo" placeholder="Correo electrónico" disabled>
+                    </div>
                 </div>
-                
-                <div class="card-body p-4">
-                    <?php if (isset($error)): ?>
-                        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-                    <?php endif; ?>
-                    
-                    <form action="" method="post">
-                        <input type="hidden" name="ID" value="<?= $txtID ?>">
-                        
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold"><i class="bi bi-envelope"></i> Correo electrónico:</label>
-                            <p class="form-control-plaintext fs-5"><?= htmlspecialchars($Correo ?? '') ?></p>
-                        </div>
+                <div class="field-group">
+                    <label for="Contraseña">Contraseña</label>
+                    <div class="input-wrapper disabled">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="Contraseña" value="********" disabled>
+                    </div>
+                </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold"><i class="bi bi-lock"></i> Contraseña:</label>
-                            <p class="form-control-plaintext fs-5">********</p>
-                            <small class="text-muted"></small>
-                        </div>
-
-
-                        <div class="mb-3">
-                            <label for="IdRol" class="form-label fw-bold">Rol:</label>
-                            <select name="IdRol" id="IdRol" class="form-select form-select-lg" required>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="IdRol">Rol</label>
+                        <div class="select-wrapper">
+                            <i class="fa-regular fa-id-badge select-icon"></i>
+                            <select name="IdRol" id="IdRol" required>
                                 <option value="1" <?= ($IDRol == 1) ? 'selected' : '' ?>>Estudiante</option>
                                 <option value="2" <?= ($IDRol == 2) ? 'selected' : '' ?>>Administrador</option>
                                 <option value="3" <?= ($IDRol == 3) ? 'selected' : '' ?>>Profesor</option>
                             </select>
+                            <i class="fa-solid fa-chevron-down select-caret"></i>
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="Verificado" class="form-label fw-bold">Verificado:</label>
-                            <select name="Verificado" id="Verificado" class="form-select form-select-lg" required>
+                    <div class="field-group">
+                        <label for="Verificado">Verificado</label>
+                        <div class="select-wrapper">
+                            <i class="fa-regular fa-shield select-icon"></i>
+                            <select name="Verificado" id="Verificado" required>
                                 <option value="1" <?= ($Verificado == 1) ? 'selected' : '' ?>>Sí</option>
                                 <option value="0" <?= ($Verificado == 0) ? 'selected' : '' ?>>No</option>
                             </select>
+                            <i class="fa-solid fa-chevron-down select-caret"></i>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="Estado" class="form-label fw-bold">Estado:</label>
-                            <select name="Estado" id="Estado" class="form-select form-select-lg" required>
-                                <option value="1" <?= ($Estado == 1) ? 'selected' : '' ?>>HABILITADO</option>
-                                <option value="0" <?= ($Estado == 0) ? 'selected' : '' ?>>INHABILITADO</option>
-                            </select>
-                        </div>
-
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="usuarios.php" class="btn btn-secondary btn-lg">
-                                <i class="bi bi-x-circle"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle"></i> Actualizar
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <div class="field-group">
+                    <label for="Estado">Estado</label>
+                    <div class="select-wrapper">
+                        <i class="fa-regular fa-circle-check select-icon"></i>
+                        <select name="Estado" id="Estado" required>
+                            <option value="1" <?= ($Estado == 1) ? 'selected' : '' ?>>HABILITADO</option>
+                            <option value="0" <?= ($Estado == 0) ? 'selected' : '' ?>>INHABILITADO</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-caret"></i>
+                    </div>
+                </div>
+
+                <div class="admin-actions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa-solid fa-check"></i> Actualizar
+                    </button>
+                    <a class="btn btn-ghost" href="usuarios.php" role="button">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                </div>
+
+            </form>
+
         </div>
     </div>
 </div>

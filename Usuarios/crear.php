@@ -24,33 +24,74 @@ if($_POST){
 }
 ?>
 <?php include("../header.php") ?>
-<br> <br>
-<div class="card">
-    <div class="card-header">Datos del usuario</div>
-    <div class="card-body">
-        <?php if(isset($error)) { ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-circle"></i>
-                <?php echo $error; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php } ?>
-        
-        <form action="" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="Correo" class="form-label">Correo electrónico:</label>
-                <input type="email" class="form-control form-control-lg" name="Correo" id="Correo" 
-                       placeholder="Ingrese el correo electrónico" required>
-            </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear usuario</title>
+    <link rel="stylesheet" href="../css/crear.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
 
-            <div class="mb-3">
-                <label for="Contrasena" class="form-label">Contraseña:</label>
-                <input type="password" class="form-control form-control-lg" name="Contrasena" id="Contraseña" 
-                       placeholder="Ingrese la contraseña" required>
-            </div>
+<div class="admin-wrap">
+    <div class="admin-card">
 
-            <button type="submit" class="btn btn-success btn-lg">Guardar</button>
-            <a name="" id="" class="btn btn-primary btn-lg" href="usuarios.php" role="button">Cancelar</a>
-        </form>
+        <div class="admin-card-header">
+            <i class="fa-regular fa-user"></i> Datos del usuario
+        </div>
+
+        <div class="admin-card-body">
+
+            <?php if(isset($error)) { ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <?php echo $error; ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php } ?>
+
+            <form action="" method="post" enctype="multipart/form-data">
+
+                <div class="field-group">
+                    <label for="Correo">Correo electrónico</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" name="Correo" id="Correo"
+                               placeholder="Ingrese el correo electrónico" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="Contraseña">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" name="Contrasena" id="Contraseña"
+                               placeholder="Ingrese la contraseña" required>
+                        <button type="button" class="toggle-password" tabindex="-1" onclick="
+                            const i=this.previousElementSibling;
+                            i.type = i.type === 'password' ? 'text' : 'password';
+                            this.querySelector('i').classList.toggle('fa-eye');
+                            this.querySelector('i').classList.toggle('fa-eye-slash');
+                        ">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-actions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar
+                    </button>
+                    <a class="btn btn-ghost" href="usuarios.php" role="button">Cancelar</a>
+                </div>
+
+            </form>
+
+        </div>
     </div>
 </div>
+
+</body>
+</html>

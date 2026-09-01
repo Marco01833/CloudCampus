@@ -49,7 +49,6 @@ include("../header.php");
         </li>
     </ul>
 
-    <!-- Contenido dinámico -->
     <div class="row">
         <div class="col-12">
             <?php
