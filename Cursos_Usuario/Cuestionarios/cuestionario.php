@@ -62,6 +62,10 @@ include("../../header.php");
             <a href="../../Cursos_Usuario/contenido.php?id=<?= $cuestionario['CursoID'] ?>" class="btn btn-secondary">Volver al Curso</a>
             
         </div>
+    <?php elseif ($esEstudiante): ?>
+        <div class="mb-3">
+            <a href="../../Cursos_Usuario/contenido.php?id=<?= $cuestionario['CursoID'] ?>" class="btn btn-secondary">Volver al Curso</a>
+        </div>
     <?php endif; ?>
 
     <?php if ($esEstudiante): ?>

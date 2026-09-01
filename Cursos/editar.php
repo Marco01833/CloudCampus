@@ -1,7 +1,9 @@
 <?php
 include("../autenticacion.php");
 include("../bd.php");
-
+$categorias = [];
+$stmtCats = $conexion->query("SELECT IDCategoria, Nombre FROM categoria ORDER BY IDCategoria ASC");
+$categorias = $stmtCats->fetchAll(PDO::FETCH_ASSOC);
 $txtID = isset($_GET['txtID']) ? (int)$_GET['txtID'] : 0;
 $curso = null;
 $error = '';
@@ -20,6 +22,8 @@ if ($_POST) {
     $id = (int) ($_POST['ID'] ?? 0);
     $Nombre = $_POST['Nombre'] ?? '';
     $Descripcion = $_POST['Descripcion'] ?? '';
+    $nivel = $_POST['nivel'] ?? '';
+    $IDCategoria = $_POST['IDCategoria'] ?? '';
     $Precio = (float) ($_POST['Precio'] ?? 0);
     $IDUsuario = $curso['IDUsuario'] ?? 0; 
     $imagen_actual = $curso['Imagen'] ?? 'default.jpg';
@@ -46,11 +50,13 @@ if ($_POST) {
                 IDUsuario = ?, 
                 Nombre = ?, 
                 Descripcion = ?, 
+                nivel = ?,
+                IDCategoria = ?,
                 Precio = ?, 
                 Imagen = ? 
                 WHERE ID = ?";
         $stmt = $conexion->prepare($sql);
-        $stmt->execute([$IDUsuario, $Nombre, $Descripcion, $Precio, $nombreArchivo_imagen, $id]);
+        $stmt->execute([$IDUsuario, $Nombre, $Descripcion, $nivel, $IDCategoria, $Precio, $nombreArchivo_imagen, $id]);
         header('Location: ../Cursos_Usuario/contenido.php?id=' . $txtID . '&mensaje=Curso actualizado correctamente');
         exit;
     } catch (PDOException $e) {
@@ -83,6 +89,33 @@ include("../header.php");
                             <label for="Descripcion" class="form-label fw-bold">Descripción:</label>
                             <input type="text" value="<?= htmlspecialchars($curso['Descripcion'] ?? '') ?>" class="form-control form-control-lg" name="Descripcion" id="Descripcion">
                         </div>
+
+                        <div class="field-group mb-3">
+                    <label for="nivel" class="fw-semibold text-secondary mb-1">Nivel</label>
+                    <div class="input-wrapper position-relative">
+                        <i class="fa-solid fa-level-up-alt position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="z-index: 4; font-size: 0.9rem;"></i>
+                        <select name="nivel" id="nivel" class="form-select ps-5" required>
+                            <option value="Básico" <?= ($curso['nivel'] ?? 'Básico') == 'Básico' ? 'selected' : '' ?>>Básico</option>
+                            <option value="Intermedio" <?= ($curso['nivel'] ?? 'Básico') == 'Intermedio' ? 'selected' : '' ?>>Intermedio</option>
+                            <option value="Avanzado" <?= ($curso['nivel'] ?? 'Básico') == 'Avanzado' ? 'selected' : '' ?>>Avanzado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field-group mb-3">
+                    <label for="categoria" class="fw-semibold text-secondary mb-1">Categoría</label>
+                    <div class="input-wrapper position-relative">
+                        <i class="fa-solid fa-tags position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="z-index: 4; font-size: 0.9rem;"></i>
+                        <select name="IDCategoria" id="categoria" class="form-select ps-5">
+                            <option value="">Seleccionar categoría</option>
+                            <?php foreach ($categorias as $cat): ?>
+                                <option value="<?= $cat['IDCategoria'] ?>" <?= ($curso['IDCategoria'] ?? '') == $cat['IDCategoria'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($cat['Nombre']) ?>
+                                </option>
+                                <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
                         <div class="mb-4">
                             <label for="Precio" class="form-label fw-bold">Precio:</label>
                             <input type="number" step="0.01" value="<?= htmlspecialchars($curso['Precio'] ?? 0) ?>" class="form-control form-control-lg" name="Precio" id="Precio" required>

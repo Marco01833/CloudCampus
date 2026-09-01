@@ -1,0 +1,367 @@
+/* ============================================================
+   Punto Código — Panel: listado de cursos (index.php)
+   Autocontenido: solo requiere style.css cargado antes
+   (variables --red, --ink, --surface, --border, --signal, --purple).
+   ============================================================ */
+
+/* ---------- Contenedor centrado ---------- */
+
+.admin-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+.admin-wrap-wide {
+    max-width: 1140px;
+}
+
+/* ---------- Encabezado de página ---------- */
+
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.admin-page-header h1 {
+    font-family: "Poppins", sans-serif;
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0.35rem 0 0.4rem;
+}
+
+.admin-page-header p {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.admin-page-header .btn {
+    box-shadow: 0 8px 20px -8px rgba(227, 30, 36, 0.45);
+}
+
+/* ---------- Alertas ---------- */
+
+.alert-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.alert-box.success {
+    background: rgba(78, 158, 82, 0.08);
+    border: 1px solid rgba(78, 158, 82, 0.25);
+    color: #3a7a3d;
+}
+
+.alert-box.success i:first-child {
+    color: var(--signal);
+}
+
+.alert-box.error {
+    background: rgba(227, 30, 36, 0.08);
+    border: 1px solid rgba(227, 30, 36, 0.25);
+    color: var(--red-dark);
+}
+
+.alert-box i:first-child {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+}
+
+.alert-box span {
+    flex: 1;
+    font-weight: 500;
+}
+
+.alert-box-close {
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.6;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.1rem;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+}
+
+.alert-box-close:hover {
+    opacity: 1;
+}
+
+/* ---------- Tarjeta contenedora ---------- */
+
+.admin-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px -18px rgba(22, 19, 15, 0.12);
+    overflow: hidden;
+}
+
+/* ---------- Barra de búsqueda ---------- */
+
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    background: linear-gradient(to bottom, #fff, var(--bg));
+}
+
+.table-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 320px;
+    width: 100%;
+}
+
+.table-search i {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.table-search input {
+    width: 100%;
+    padding: 0.6rem 0.9rem 0.6rem 2.4rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.table-search input:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.1);
+}
+
+.table-count {
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.table-count strong {
+    color: var(--ink);
+}
+
+/* ---------- Tabla ---------- */
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 880px;
+}
+
+.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    text-align: left;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface);
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.data-table tbody td {
+    padding: 0.9rem 1.1rem;
+    font-size: 0.88rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+    background: var(--surface);
+}
+
+.cell-id {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--muted);
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.col-thumb {
+    width: 66px;
+}
+
+.col-desc {
+    max-width: 260px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.col-price {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.col-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ---------- Miniatura de curso ---------- */
+
+.dash-thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+}
+
+.dash-table-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.dash-price {
+    font-family: "Poppins", sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--red);
+}
+
+/* ---------- Badge de profesor ---------- */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.badge-role.role-teacher {
+    background: rgba(107, 63, 160, 0.1);
+    color: var(--purple);
+}
+
+/* ---------- Botones de acción (icon-only) ---------- */
+
+.action-buttons {
+    display: inline-flex;
+    gap: 0.4rem;
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.icon-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px -4px rgba(22, 19, 15, 0.2);
+}
+
+.icon-btn-danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(227, 30, 36, 0.06);
+}
+
+/* ---------- Footer de tabla ---------- */
+
+.table-footer {
+    padding: 1.1rem 1.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.table-footer strong {
+    color: var(--ink);
+}
+
+/* ---------- Estado vacío ---------- */
+
+.table-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 4.5rem 2rem;
+    text-align: center;
+    color: var(--muted);
+}
+
+.table-empty i {
+    font-size: 2.4rem;
+    color: var(--border);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 700px) {
+    .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .table-search {
+        max-width: none;
+    }
+}

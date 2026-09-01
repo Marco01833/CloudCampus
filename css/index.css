@@ -1,0 +1,697 @@
+/* ============================================================
+   Punto Código — estilos propios de index.html
+   (requiere style.css cargado antes)
+   ============================================================ */
+
+/* ---------- Hero ---------- */
+    .hero {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 3.5rem;
+        align-items: center;
+        padding: 3.2rem 0 5rem;
+    }
+
+    .hero h1 {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        font-size: clamp(2.3rem, 4vw, 3.4rem);
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+        margin: 0.9rem 0 1.2rem;
+    }
+
+    .hero h1 .accent {
+        color: var(--red);
+    }
+
+    .hero p {
+        font-size: 1.08rem;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 480px;
+        margin-bottom: 2rem;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .hero-note {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    /* terminal card */
+    .terminal {
+        background: #17140F;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 24px 60px -20px rgba(22, 19, 15, 0.35);
+    }
+
+    .terminal-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.85rem 1rem;
+        background: #211D17;
+    }
+
+    .terminal-bar span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #443E33;
+    }
+
+    .terminal-title {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.75rem;
+        color: #8A8378;
+        margin-left: 0.5rem;
+    }
+
+    .terminal-body {
+        padding: 1.6rem 1.5rem 2rem;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+        line-height: 1.9;
+        color: #E4DFD8;
+    }
+
+    .terminal-body .prompt {
+        color: #F0575C;
+    }
+
+    .terminal-body .typed {
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: 2px solid #F0575C;
+        width: 0;
+        animation: typing 2.6s steps(37, end) 0.4s forwards, caret 0.8s step-end infinite;
+    }
+
+    .terminal-body .ok {
+        color: var(--signal);
+    }
+
+    .terminal-body .line {
+        opacity: 0;
+        animation: reveal 0.4s ease forwards;
+    }
+
+    .terminal-body .line.l2 { animation-delay: 3.1s; }
+    .terminal-body .line.l3 { animation-delay: 3.5s; }
+
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 24ch; }
+    }
+
+    @keyframes caret {
+        50% { border-color: transparent; }
+    }
+
+    @keyframes reveal {
+        to { opacity: 1; }
+    }
+
+    /* ---------- Method (phone mockup) ---------- */
+    .method {
+        display: grid;
+        grid-template-columns: 0.9fr 1.05fr;
+        align-items: center;
+        gap: 3.5rem;
+        padding: 4rem 0 5rem;
+    }
+
+    .method-visual {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .method-blob {
+        position: absolute;
+        width: 300px;
+        height: 380px;
+        background: linear-gradient(160deg, var(--red) 0%, #7A1216 100%);
+        border-radius: 48% 52% 44% 56% / 58% 62% 38% 42%;
+        transform: rotate(-4deg);
+        z-index: 1;
+    }
+
+    .phone-mockup {
+        position: relative;
+        z-index: 2;
+        width: 250px;
+        background: #17140F;
+        border-radius: 34px;
+        padding: 12px;
+        box-shadow: 0 30px 60px -20px rgba(22, 19, 15, 0.4);
+    }
+
+    .phone-notch {
+        width: 60px;
+        height: 16px;
+        background: #17140F;
+        border-radius: 0 0 12px 12px;
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+    }
+
+    .phone-screen {
+        background: #fff;
+        border-radius: 24px;
+        padding: 28px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .quiz-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .quiz-close {
+        color: var(--muted);
+        font-size: 1rem;
+    }
+
+    .quiz-title {
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .quiz-progress {
+        height: 6px;
+        background: var(--border);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .quiz-progress-fill {
+        height: 100%;
+        width: 40%;
+        background: var(--red);
+        border-radius: 999px;
+    }
+
+    .quiz-question {
+        font-family: "Inter", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.4;
+    }
+
+    .quiz-question code {
+        font-family: "JetBrains Mono", monospace;
+        background: #FBE3E3;
+        color: var(--red-dark);
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+    }
+
+    .quiz-code {
+        background: #17140F;
+        color: #E4DFD8;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.7rem;
+        line-height: 1.7;
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+    }
+
+    .quiz-code .ln {
+        color: #6E695F;
+        margin-right: 0.5rem;
+    }
+
+    .quiz-option {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.55rem 0.8rem;
+        font-size: 0.78rem;
+        color: var(--ink);
+    }
+
+    .quiz-option.selected {
+        border-color: var(--red);
+        background: #FBE3E3;
+        color: var(--red-dark);
+        font-weight: 600;
+    }
+
+    .method-content .eyebrow {
+        margin-bottom: 0.9rem;
+    }
+
+    .method-content h2 {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        line-height: 1.15;
+        margin-bottom: 1.1rem;
+    }
+
+    .method-content p {
+        font-size: 1rem;
+        line-height: 1.65;
+        color: var(--muted);
+        max-width: 460px;
+    }
+
+    /* ---------- Courses ---------- */
+    .courses {
+        padding: 5.5rem 0;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 2.5rem;
+    }
+
+    .section-head h2 {
+        font-family: "Poppins", sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 0.6rem;
+    }
+
+    .section-head a {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        text-decoration: none;
+        color: var(--red);
+    }
+
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+    }
+
+    .course-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--red);
+    }
+
+    .course-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--red);
+        background: #FBE3E3;
+        border-radius: 999px;
+        padding: 0.25rem 0.7rem;
+        width: fit-content;
+    }
+
+    .course-card h3 {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .course-card p {
+        font-size: 0.88rem;
+        color: var(--muted);
+        line-height: 1.5;
+        flex-grow: 1;
+    }
+
+    .course-meta {
+        display: flex;
+        justify-content: space-between;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.78rem;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+        padding-top: 0.85rem;
+    }
+
+    /* ---------- Value props ---------- */
+    .value-props {
+        padding: 3rem 0;
+    }
+
+    .value-props-banner {
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 2.75rem 3rem 3.25rem;
+    }
+
+    .value-props-banner h2 {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 2.25rem;
+    }
+
+    .value-props-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+    }
+
+    .value-prop i {
+        font-size: 1.6rem;
+        color: var(--red);
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .value-prop h3 {
+        font-family: "Poppins", sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .value-prop p {
+        font-size: 0.9rem;
+        line-height: 1.55;
+        color: var(--muted);
+    }
+
+    /* ---------- FAQ ---------- */
+    .faq {
+        padding: 4.5rem 0 5.5rem;
+    }
+
+    .faq-list {
+        max-width: 760px;
+        border-top: 1px solid var(--border);
+    }
+
+    .faq-item {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .faq-question {
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.4rem 0;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .faq-question i {
+        color: var(--red);
+        font-size: 0.85rem;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-question i {
+        transform: rotate(45deg);
+    }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.25s ease;
+    }
+
+    .faq-answer p {
+        font-size: 0.92rem;
+        line-height: 1.6;
+        color: var(--muted);
+        padding-bottom: 1.4rem;
+        max-width: 640px;
+    }
+
+    /* ---------- Pricing ---------- */
+    .pricing {
+        padding: 5.5rem 0;
+    }
+
+    .pricing-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.3rem;
+        margin-top: 1.5rem;
+    }
+
+    .pricing-toggle button {
+        font-family: "Inter", sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        padding: 0.55rem 1.2rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pricing-toggle button.active {
+        background: var(--ink);
+        color: #fff;
+    }
+
+    .pricing-toggle .save-badge {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--signal);
+        background: #E4F3E4;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-top: 2.5rem;
+    }
+
+    .price-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .price-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .price-card.featured {
+        border: 2px solid var(--red);
+        background: var(--surface);
+    }
+
+    .price-badge {
+        position: absolute;
+        top: -12px;
+        left: 1.5rem;
+        background: var(--red);
+        color: #fff;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.68rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+    }
+
+    .price-plan {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .price-level {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+    }
+
+    .price-amount {
+        display: flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        margin: 1.25rem 0 1.4rem;
+    }
+
+    .price-amount .num {
+        font-family: "Poppins", sans-serif;
+        font-size: 2.1rem;
+        font-weight: 800;
+    }
+
+    .price-amount .period {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.82rem;
+        color: var(--muted);
+    }
+
+    .price-features {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        flex-grow: 1;
+        margin-bottom: 1.6rem;
+    }
+
+    .price-features li {
+        font-size: 0.87rem;
+        color: var(--muted);
+        display: flex;
+        gap: 0.55rem;
+        line-height: 1.4;
+    }
+
+    .price-features li i {
+        color: var(--signal);
+        font-size: 0.8rem;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .price-card .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ---------- CTA ---------- */
+    .cta {
+        background: var(--ink);
+        border-radius: 20px;
+        margin: 0 auto 5.5rem;
+        padding: 3.5rem 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    .cta h2 {
+        font-family: "Poppins", sans-serif;
+        color: #fff;
+        font-size: 1.9rem;
+        font-weight: 700;
+        max-width: 460px;
+        line-height: 1.2;
+    }
+
+    .cta p {
+        font-family: "JetBrains Mono", monospace;
+        color: #B3ABA4;
+        font-size: 0.85rem;
+        margin-top: 0.6rem;
+    }
+
+    .cta .btn-primary {
+        background: #fff;
+        color: var(--ink);
+        white-space: nowrap;
+    }
+
+    .cta .btn-primary:hover {
+        background: #EDE8E5;
+    }
+
+    
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+        .hero {
+            grid-template-columns: 1fr;
+            padding-top: 2rem;
+        }
+
+        .method {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+            padding-top: 1rem;
+            text-align: center;
+        }
+
+        .method-content p {
+            margin: 0 auto;
+        }
+
+        .course-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cta {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .course-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .value-props-grid {
+            grid-template-columns: 1fr;
+            gap: 1.75rem;
+        }
+
+        .value-props-banner {
+            padding: 2rem 1.5rem 2.25rem;
+            border-radius: 14px;
+        }
+
+        .cta {
+            padding: 2.5rem 1.5rem;
+            border-radius: 14px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .terminal-body .typed,
+        .terminal-body .line {
+            animation: none;
+            opacity: 1;
+            width: 24ch;
+        }
+    }

@@ -1,0 +1,259 @@
+/* ============================================================
+   Punto Código — estilos propios de cursos.html
+   (requiere style.css cargado antes)
+   ============================================================ */
+
+/* ---------- Catalog header ---------- */
+    .catalog-header {
+        padding: 3rem 0 2.5rem;
+    }
+
+    .catalog-header h1 {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        font-size: clamp(2rem, 3.4vw, 2.8rem);
+        margin: 0.7rem 0 0.8rem;
+    }
+
+    .catalog-header p {
+        color: var(--muted);
+        font-size: 1.05rem;
+        max-width: 560px;
+        line-height: 1.55;
+    }
+
+    /* search bar styled like a terminal prompt */
+    .search-bar {
+        margin-top: 2rem;
+        background: #17140F;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        padding: 0.2rem 0.2rem 0.2rem 1.1rem;
+        max-width: 480px;
+    }
+
+    .search-bar .prompt-char {
+        font-family: "JetBrains Mono", monospace;
+        color: #F0575C;
+        font-size: 0.95rem;
+    }
+
+    .search-bar input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #E4DFD8;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.92rem;
+        padding: 0.85rem 0.8rem;
+    }
+
+    .search-bar input::placeholder {
+        color: #6E695F;
+    }
+
+    /* filter chips */
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1.5rem;
+    }
+
+    .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--muted);
+        padding: 0.45rem 0.95rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+        border-color: var(--red);
+        color: var(--ink);
+    }
+
+    .chip.active {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: #fff;
+    }
+
+    /* ---------- Course grid ---------- */
+    .catalog-grid-section {
+        padding: 1rem 0 5rem;
+    }
+
+    .results-count {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+
+    .course-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--red);
+    }
+
+    .course-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .course-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--red);
+        background: #FBE3E3;
+        border-radius: 999px;
+        padding: 0.25rem 0.7rem;
+        width: fit-content;
+    }
+
+    .course-tag.intermedio {
+        color: #B5820A;
+        background: #FBF0D4;
+    }
+
+    .course-tag.avanzado {
+        color: #6B3FA0;
+        background: #ECE1F7;
+    }
+
+    .course-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--red);
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .course-card h3 {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.08rem;
+        font-weight: 600;
+    }
+
+    .course-card p {
+        font-size: 0.87rem;
+        color: var(--muted);
+        line-height: 1.5;
+        flex-grow: 1;
+    }
+
+    .course-meta {
+        display: flex;
+        justify-content: space-between;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.78rem;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+        padding-top: 0.85rem;
+    }
+
+    .no-results {
+        display: none;
+        text-align: center;
+        padding: 4rem 0;
+        color: var(--muted);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+    }
+
+    /* ---------- CTA ---------- */
+    .cta {
+        background: var(--ink);
+        border-radius: 20px;
+        margin: 0 auto 5.5rem;
+        padding: 3.5rem 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    .cta h2 {
+        font-family: "Poppins", sans-serif;
+        color: #fff;
+        font-size: 1.7rem;
+        font-weight: 700;
+        max-width: 460px;
+        line-height: 1.2;
+    }
+
+    .cta p {
+        font-family: "JetBrains Mono", monospace;
+        color: #B3ABA4;
+        font-size: 0.85rem;
+        margin-top: 0.6rem;
+    }
+
+    .cta .btn-primary {
+        background: #fff;
+        color: var(--ink);
+        white-space: nowrap;
+    }
+
+    .cta .btn-primary:hover {
+        background: #EDE8E5;
+    }
+
+    
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+        .course-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cta {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .course-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cta {
+            padding: 2.5rem 1.5rem;
+            border-radius: 14px;
+        }
+
+        .search-bar {
+            max-width: 100%;
+        }
+    }

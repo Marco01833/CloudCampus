@@ -137,42 +137,104 @@ if (empty($preguntas)) {
 
 include("../../header.php");
 ?>
-<div class="container mt-4">
-    <h2>Responder Cuestionario</h2>
-    <form method="post">
-        <input type="hidden" name="intento_id" value="<?= $intento_id ?>">
-        <?php foreach ($preguntas as $index => $pregunta): ?>
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5>Pregunta <?= $index + 1 ?> (<?= $pregunta['Puntaje'] ?> pts)</h5>
-                    <p><?= nl2br(htmlspecialchars($pregunta['Enunciado'])) ?></p>
-                    <?php if ($pregunta['Tipo'] === 'verdadero_falso'): ?>
-                        <?php foreach ($pregunta['Opciones'] as $opcion): ?>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="respuestas[<?= $pregunta['ID'] ?>]" value="<?= $opcion['ID'] ?>" required>
-                                <label class="form-check-label"><?= htmlspecialchars($opcion['TextoOpcion']) ?></label>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php elseif ($pregunta['Tipo'] === 'opcion_unica'): ?>
-                        <?php foreach ($pregunta['Opciones'] as $opcion): ?>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="respuestas[<?= $pregunta['ID'] ?>]" value="<?= $opcion['ID'] ?>" required>
-                                <label class="form-check-label"><?= htmlspecialchars($opcion['TextoOpcion']) ?></label>
-                            </div>
-                        <?php endforeach; ?>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario — Punto Código</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+
+    <main class="wrap quiz-page">
+
+        <div class="quiz-header">
+            <span class="eyebrow">// evaluación</span>
+            <?php
+            $stmt_titulo = $conexion->prepare("SELECT Titulo FROM Cuestionarios WHERE ID = ?");
+            $stmt_titulo->execute([$cuestionario_id]);
+            $cuestionario = $stmt_titulo->fetch(PDO::FETCH_ASSOC);
+            $titulo = $cuestionario['Titulo'] ?? 'Cuestionario';
+            ?>
+            <h1>Cuestionario: <?= htmlspecialchars($titulo) ?></h1>
+            <div class="quiz-progress-track">
+                <?php
+                $total_preguntas = count($preguntas);
+                ?>
+                <div class="quiz-progress-fill" style="width: <?= ($total_preguntas > 0) ? (1 / $total_preguntas * 100) : 0 ?>%;"></div>
+            </div>
+            <p class="quiz-progress-label">Pregunta 1 de <?= $total_preguntas ?></p>
+        </div>
+
+        <form id="quizForm" method="post">
+            <input type="hidden" name="intento_id" value="<?= $intento_id ?>">
+
+            <?php foreach ($preguntas as $index => $pregunta): ?>
+                <div class="quiz-question">
+                    <?php
+                    $tag_class = '';
+                    $tag_text = '';
+                    if ($pregunta['Tipo'] === 'verdadero_falso') {
+                        $tag_class = 'tag-vf';
+                        $tag_text = 'Verdadero o falso';
+                    } elseif ($pregunta['Tipo'] === 'opcion_unica') {
+                        $tag_class = 'tag-unica';
+                        $tag_text = 'Opción única';
+                    } elseif ($pregunta['Tipo'] === 'opcion_multiple') {
+                        $tag_class = 'tag-multiple';
+                        $tag_text = 'Opción múltiple';
+                    } else {
+                        $tag_class = 'tag-unica';
+                        $tag_text = 'Pregunta';
+                    }
+                    ?>
+                    <span class="quiz-question-tag <?= $tag_class ?>"><?= $tag_text ?></span>
+                    <p class="quiz-question-title"><?= nl2br(htmlspecialchars($pregunta['Enunciado'])) ?></p>
+
+                    <?php if ($pregunta['Tipo'] === 'verdadero_falso' || $pregunta['Tipo'] === 'opcion_unica'): ?>
+                        <div class="quiz-vf-options">
+                            <?php foreach ($pregunta['Opciones'] as $opcion): ?>
+                                <label class="quiz-option">
+                                    <input type="radio" name="respuestas[<?= $pregunta['ID'] ?>]" value="<?= $opcion['ID'] ?>" >
+                                    <?= htmlspecialchars($opcion['TextoOpcion']) ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
                     <?php elseif ($pregunta['Tipo'] === 'opcion_multiple'): ?>
-                        <?php foreach ($pregunta['Opciones'] as $opcion): ?>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="respuestas[<?= $pregunta['ID'] ?>][]" value="<?= $opcion['ID'] ?>">
-                                <label class="form-check-label"><?= htmlspecialchars($opcion['TextoOpcion']) ?></label>
-                            </div>
-                        <?php endforeach; ?>
+                        <div class="quiz-options">
+                            <?php foreach ($pregunta['Opciones'] as $opcion): ?>
+                                <label class="quiz-option">
+                                    <input type="checkbox" name="respuestas[<?= $pregunta['ID'] ?>][]" value="<?= $opcion['ID'] ?>">
+                                    <?= htmlspecialchars($opcion['TextoOpcion']) ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
+            <?php endforeach; ?>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" name="finalizar" class="btn btn-primary">
+                    Finalizar cuestionario <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <a href="cuestionario.php?cuestionario_id=<?= $cuestionario_id ?>" class="btn btn-secondary" style="background: var(--surface); border: 1px solid var(--border); color: var(--ink); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none;">
+                    Cancelar
+                </a>
             </div>
-        <?php endforeach; ?>
-        <button type="submit" name="finalizar" class="btn btn-success">Finalizar Cuestionario</button>
-        <a href="cuestionario.php?cuestionario_id=<?= $cuestionario_id ?>" class="btn btn-secondary">Cancelar</a>
-    </form>
-</div>
+
+        </form>
+
+    </main>
+
+</body>
+</html>
 <?php include("../../footer.php"); ?>

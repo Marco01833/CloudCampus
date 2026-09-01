@@ -26,7 +26,6 @@ $facturas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th># Factura</th>
                         <th>Fecha</th>
                         <th>Total</th>
                         <th>Método de pago</th>
@@ -37,7 +36,6 @@ $facturas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tbody>
                     <?php foreach ($facturas as $factura): ?>
                     <tr>
-                        <td><strong><?= $factura['ID'] ?></strong></td>
                         <td><?= date('d/m/Y H:i', strtotime($factura['Fecha'])) ?></td>
                         <td><span class="fw-bold">$<?= number_format($factura['Total'], 2) ?></span></td>
                         <td><?= htmlspecialchars($factura['MetodoPago'] ?? 'No especificado') ?></td>

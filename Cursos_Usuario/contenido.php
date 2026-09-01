@@ -43,15 +43,18 @@ $rol_usuario = $_SESSION['rol'] ?? 0;
 $esAdmin = ($rol_usuario == 2);
 $esProfesor = ($curso['IDUsuario'] == $_SESSION['user_id']);
 $puedeEditar = $esAdmin || $esProfesor; 
+$urlRegresar = $esAdmin ? '../Cursos/index.php' : 'index.php';
 
 $mostrar_precio = true;
+$esta_inscrito_curso = false;
 if ($rol_usuario == 1) { 
     $sql_inscripcion = "SELECT Estado FROM Inscripciones WHERE IDUsuario = ? AND IDCurso = ?";
     $stmt_inscripcion = $conexion->prepare($sql_inscripcion);
     $stmt_inscripcion->execute([$_SESSION['user_id'], $id_curso]);
     $inscripcion = $stmt_inscripcion->fetch(PDO::FETCH_ASSOC);
     if ($inscripcion && $inscripcion['Estado'] == 1) {
-        $mostrar_precio = false; 
+        $mostrar_precio = false;
+        $esta_inscrito_curso = true; 
     }
 }
 
@@ -79,8 +82,23 @@ if (isset($_GET['txtID'])) {
 
 include("../header.php");
 $mensaje = $_GET['mensaje'] ?? '';
+
+$stmt_contenidos = $conexion->prepare("SELECT COUNT(*) as total FROM Contenido WHERE IDCurso = ?");
+$stmt_contenidos->execute([$id_curso]);
+$resultado_contenidos = $stmt_contenidos->fetch(PDO::FETCH_ASSOC);
+$total_contenidos = $resultado_contenidos['total'] ?? 0;
+
+$stmt_cuestionarios_count = $conexion->prepare("SELECT COUNT(*) as total FROM Cuestionarios WHERE IDCurso = ?");
+$stmt_cuestionarios_count->execute([$id_curso]);
+$resultado_cuestionarios = $stmt_cuestionarios_count->fetch(PDO::FETCH_ASSOC);
+$total_cuestionarios = $resultado_cuestionarios['total'] ?? 0;
+
+$faltan_requisitos = ($total_contenidos < 4 || $total_cuestionarios < 2);
 ?>
 <div class="container mt-4">
+    <div class="mb-3">
+        <a href="<?= $urlRegresar ?>" class="btn btn-secondary">Regresar</a>
+    </div>
     <?php if ($mensaje): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle"></i> <?= htmlspecialchars($mensaje) ?>
@@ -93,10 +111,22 @@ $mensaje = $_GET['mensaje'] ?? '';
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
+    <?php if ($esProfesor && $faltan_requisitos): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <strong>⚠️ Advertencia:</strong> 
+            Para poder aprobar este curso, debe agregar como mínimo:
+            <ul class="mb-0 mt-2">
+                <li><strong>4 contenidos</strong> (actualmente tiene <?= $total_contenidos ?>)</li>
+                <li><strong>2 valoraciones</strong> (actualmente tiene <?= $total_cuestionarios ?>)</li>
+            </ul>
+            <small class="text-muted d-block mt-2">El curso no podrá ser aprobado hasta cumplir con estos requisitos.</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><?= htmlspecialchars($curso['Nombre']) ?></h4>
-            <?php if ($esProfesor): // Solo el profesor dueño del curso ve el botón de editar curso ?>
+            <?php if ($esProfesor): ?>
                 <a href="../Cursos/editar.php?txtID=<?= $id_curso ?>" class="btn btn-warning btn-sm">
                     <i class="bi bi-pencil-square"></i> Editar curso
                 </a>
@@ -136,30 +166,52 @@ $mensaje = $_GET['mensaje'] ?? '';
                 <h5>Descripción del curso:</h5>
                 <p class="lead"><?= nl2br(htmlspecialchars($curso['Descripcion'])) ?></p>
             </div>
-<div class="mt-4">
-    <h5>Cuestionarios del Curso</h5>
-    <?php
-    $stmt = $conexion->prepare("SELECT * FROM Cuestionarios WHERE IDCurso = ? ORDER BY ID");
-    $stmt->execute([$id_curso]);
-    $cuestionarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    if (empty($cuestionarios)): ?>
-        <p class="text-muted">No hay cuestionarios aún.</p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($cuestionarios as $c): ?>
-                <li>
-                    <a href="Cuestionarios/cuestionario.php?cuestionario_id=<?= $c['ID'] ?>"><?= htmlspecialchars($c['Titulo']) ?></a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-    <?php if ($rol_usuario == 1): ?>
-        <a href="Cuestionarios/calificaciones_estudiante.php?id_curso=<?= $id_curso ?>" class="btn btn-info">Ver Mis Calificaciones</a>
-    <?php endif; ?>
-    <?php if ($esProfesor || $esAdmin): ?>
-        <a href="Cuestionarios/calificaciones_profesor.php?id_curso=<?= $id_curso ?>" class="btn btn-secondary">Ver Calificaciones de Estudiantes</a>
-    <?php endif; ?>
-</div>
+
+            <div class="mt-4">
+                <h5>Cuestionarios del Curso</h5>
+                <?php
+                $es_premium = false;
+                if ($rol_usuario == 1) {
+                    $sql_premium = "SELECT s.ID FROM Suscripciones s 
+                                    WHERE s.IDUsuario = ? AND s.IDPlan = 2 AND s.Estado = 1 
+                                    AND (s.FechaFin IS NULL OR s.FechaFin > NOW())";
+                    $stmt_premium = $conexion->prepare($sql_premium);
+                    $stmt_premium->execute([$_SESSION['user_id']]);
+                    $es_premium = $stmt_premium->fetchColumn() > 0;
+                }
+
+                $stmt = $conexion->prepare("
+                    SELECT c.*, cont.Bloqueado 
+                    FROM Cuestionarios c
+                    INNER JOIN Contenido cont ON c.IDContenido = cont.ID
+                    WHERE c.IDCurso = ?
+                    ORDER BY c.ID
+                ");
+                $stmt->execute([$id_curso]);
+                $cuestionarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                if (empty($cuestionarios)): ?>
+                    <p class="text-muted">No hay cuestionarios aún.</p>
+                <?php else: ?>
+                    <ul>
+                    <?php foreach ($cuestionarios as $c): 
+                        $bloqueado = ($c['Bloqueado'] == 1 && $rol_usuario == 1 && !$es_premium && !$esta_inscrito_curso);
+                        if ($bloqueado) {
+                            echo '<li><span class="text-muted"><i class="fas fa-lock"></i> ' . htmlspecialchars($c['Titulo']) . ' (bloqueado)</span></li>';
+                        } else {
+                            echo '<li><a href="Cuestionarios/cuestionario.php?cuestionario_id=' . $c['ID'] . '">' . htmlspecialchars($c['Titulo']) . '</a></li>';
+                        }
+                    endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+
+                <?php if ($rol_usuario == 1): ?>
+                    <a href="Cuestionarios/calificaciones_estudiante.php?id_curso=<?= $id_curso ?>" class="btn btn-info">Ver Mis Calificaciones</a>
+                <?php endif; ?>
+                <?php if ($esProfesor || $esAdmin): ?>
+                    <a href="Cuestionarios/calificaciones_profesor.php?id_curso=<?= $id_curso ?>" class="btn btn-secondary">Ver Calificaciones de Estudiantes</a>
+                <?php endif; ?>
+            </div>
+
         </div>
         <div class="card-body">
             <?php include(__DIR__ . "/vercontenido.php"); ?>

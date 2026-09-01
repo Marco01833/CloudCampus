@@ -1,6 +1,7 @@
 <?php
 include("../bd.php");
 include("../autenticacion.php");
+
 $txtID = isset($_GET['txtID']) ? (int)$_GET['txtID'] : 0;
 $id_curso = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -32,6 +33,26 @@ if ($txtID > 0) {
 
 $rol_usuario = $_SESSION['rol'] ?? 0;
 $esAdmin = ($rol_usuario == 2);
+$es_estudiante = ($rol_usuario == 1);
+
+$es_premium = false;
+$esta_inscrito_curso = false;
+if ($es_estudiante) {
+    $sql_premium = "SELECT s.ID FROM Suscripciones s 
+                    WHERE s.IDUsuario = ? AND s.IDPlan = 2 AND s.Estado = 1 
+                    AND (s.FechaFin IS NULL OR s.FechaFin > NOW())";
+    $stmt_premium = $conexion->prepare($sql_premium);
+    $stmt_premium->execute([$_SESSION['user_id']]);
+    $es_premium = $stmt_premium->fetchColumn() > 0;
+    
+    $sql_inscripcion = "SELECT Estado FROM Inscripciones WHERE IDUsuario = ? AND IDCurso = ?";
+    $stmt_inscripcion = $conexion->prepare($sql_inscripcion);
+    $stmt_inscripcion->execute([$_SESSION['user_id'], $id_curso]);
+    $inscripcion = $stmt_inscripcion->fetch(PDO::FETCH_ASSOC);
+    if ($inscripcion && $inscripcion['Estado'] == 1) {
+        $esta_inscrito_curso = true; 
+    }
+}
 
 if ($txtID > 0 && isset($contenido_unico) && $contenido_unico) {
     $esProfesor = ($contenido_unico['IDUsuario'] == $_SESSION['user_id']);
@@ -44,6 +65,8 @@ if ($txtID > 0 && isset($contenido_unico) && $contenido_unico) {
 } else {
     $esProfesor = false;
 }
+
+$es_editor = $esProfesor;
 
 function obtenerRutaArchivo($tipo, $nombreArchivo) {
     $directorioBase = '../Cursos_Usuario/';
@@ -88,7 +111,7 @@ function formatFileSize($bytes) {
 <div class="mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Contenido del curso:</h5>
-        <?php if ($esProfesor): ?>
+        <?php if ($es_editor): ?>
             <a href="agregarcontenido.php?id=<?= $id_curso ?>" class="btn btn-success btn-sm">
                 <i class="bi bi-plus-circle"></i> Agregar contenido
             </a>
@@ -110,13 +133,15 @@ function formatFileSize($bytes) {
                 if ($contenido['Tipo'] == 'enlace') $tipoTexto = 'Enlace:';
                 elseif ($contenido['Tipo'] == 'archivo') $tipoTexto = 'Archivo:';
                 elseif ($contenido['Tipo'] == 'video') $tipoTexto = 'Video:';
+
+                $bloqueado_para_estudiante = ($contenido['Bloqueado'] == 1 && $es_estudiante && !$es_premium && !$esta_inscrito_curso);
             ?>
             <div class="list-group-item">
                 <div id="vista_<?= $contenido['ID'] ?>">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="fw-bold"><?= htmlspecialchars($contenido['Titulo']) ?></span>
                         <div>
-                            <?php if ($esProfesor): ?>
+                            <?php if ($es_editor): ?>
                                 <a href="editarcontenido.php?txtID=<?= $contenido['ID'] ?>&id_curso=<?= $id_curso ?>" class="btn btn-warning btn-sm me-1">
                                     <i class="bi bi-pencil-square"></i> Editar
                                 </a>
@@ -131,16 +156,24 @@ function formatFileSize($bytes) {
                     <div class="mb-2">
                         <strong><?= $tipoTexto ?></strong> 
                         <?php if ($contenido['Tipo'] == 'enlace'): ?>
-                            <a href="<?= htmlspecialchars($contenido['Archivo']) ?>" target="_blank"><?= htmlspecialchars($contenido['Archivo']) ?></a>
+                            <?php if ($bloqueado_para_estudiante): ?>
+                                <span class="text-muted"><?= str_repeat('*', min(strlen($contenido['Archivo']), 50)) ?></span>
+                            <?php else: ?>
+                                <a href="<?= htmlspecialchars($contenido['Archivo']) ?>" target="_blank"><?= htmlspecialchars($contenido['Archivo']) ?></a>
+                            <?php endif; ?>
                         <?php else: ?>
                             <?= htmlspecialchars($contenido['Archivo']) ?>
                         <?php endif; ?>
                     </div>
                     <div class="mb-2">
-                        <span class="fw-bold"><?= ($contenido['Bloqueado'] == 1) ? 'Bloqueado' : 'Desbloqueado' ?></span>
+                        <span class="fw-bold"><?= ($contenido['Bloqueado'] == 1) ? 'Bloqueado ' : 'Desbloqueado' ?></span>
+                        <?php if (($es_premium || $esta_inscrito_curso) && $contenido['Bloqueado'] == 1): ?>
+                            <span class="badge bg-success text-white ms-2"></span>
+                        <?php endif; ?>
                     </div>
                 </div>
 
+                <!--  VIDEO  -->
                 <?php if ($contenido['Tipo'] === 'video'): ?>
                     <?php if (strpos($rutaArchivo, 'youtube.com') !== false || strpos($rutaArchivo, 'youtu.be') !== false): 
                         $video_id = '';
@@ -148,8 +181,11 @@ function formatFileSize($bytes) {
                             $video_id = $match[1];
                         }
                         $embed_url = "https://www.youtube.com/embed/{$video_id}?rel=0&showinfo=0";
+                        if ($bloqueado_para_estudiante) {
+                            $embed_url .= "&controls=0&disablekb=1&modestbranding=1";
+                        }
                     ?>
-                        <div class="video-container my-3">
+                        <div class="video-container my-3 <?= $bloqueado_para_estudiante ? 'video-bloqueado' : '' ?>">
                             <iframe src="<?= htmlspecialchars($embed_url) ?>" 
                                     title="<?= htmlspecialchars($contenido['Titulo'] ?? 'Video de YouTube') ?>" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -161,8 +197,8 @@ function formatFileSize($bytes) {
                         $esVideoValido = in_array(strtolower(pathinfo($rutaArchivo, PATHINFO_EXTENSION)), ['mp4', 'webm', 'ogg']);
                     ?>
                         <?php if ($esVideoValido && !$esVideoExterno && file_exists($rutaArchivo)): ?>
-                            <div class="video-container my-3">
-                                <video controls class="w-100">
+                            <div class="video-container my-3 <?= $bloqueado_para_estudiante ? 'video-bloqueado' : '' ?>">
+                                <video <?= $bloqueado_para_estudiante ? '' : 'controls' ?> class="w-100" <?= $bloqueado_para_estudiante ? 'controlslist="nodownload" disablepictureinpicture' : '' ?>>
                                     <source src="<?= htmlspecialchars($rutaArchivo) ?>" 
                                             type="video/<?= pathinfo($rutaArchivo, PATHINFO_EXTENSION) ?>">
                                     Tu navegador no soporta la reproducción de video.
@@ -182,6 +218,7 @@ function formatFileSize($bytes) {
                         <?php endif; ?>
                     <?php endif; ?>
 
+                <!-- ARCHIVO  -->
                 <?php elseif ($contenido['Tipo'] === 'archivo'): 
                     $nombreArchivo = basename($rutaArchivo);
                     $extension = strtolower(pathinfo($nombreArchivo, PATHINFO_EXTENSION));
@@ -215,7 +252,9 @@ function formatFileSize($bytes) {
                                     <?= $tamanoArchivo > 0 ? formatFileSize($tamanoArchivo) : 'Tamaño desconocido' ?>
                                 </div>
                             </div>
-                            <?php if (file_exists($rutaArchivo) && !$esVideoExterno): ?>
+                            <?php if ($bloqueado_para_estudiante): ?>
+                                <span class="text-muted"><i class="fas fa-lock me-1"></i> Bloqueado</span>
+                            <?php elseif (file_exists($rutaArchivo) && !$esVideoExterno): ?>
                                 <a href="<?= htmlspecialchars($rutaArchivo) ?>" 
                                    class="btn btn-sm btn-success" 
                                    download="<?= htmlspecialchars($nombreArchivo) ?>" 
@@ -232,6 +271,7 @@ function formatFileSize($bytes) {
                         </div>
                     </div>
 
+                <!--  ENLACE  -->
                 <?php elseif ($contenido['Tipo'] === 'enlace'): 
                     $esYoutube = (strpos($contenido['Archivo'], 'youtube.com') !== false || strpos($contenido['Archivo'], 'youtu.be') !== false);
                     if ($esYoutube): 
@@ -240,8 +280,11 @@ function formatFileSize($bytes) {
                             $video_id = $match[1];
                         }
                         $embed_url = "https://www.youtube.com/embed/{$video_id}";
-                ?>
-                        <div class="video-container my-3">
+                        if ($bloqueado_para_estudiante) {
+                            $embed_url .= "?controls=0&disablekb=1&modestbranding=1";
+                        }
+                    ?>
+                        <div class="video-container my-3 <?= $bloqueado_para_estudiante ? 'video-bloqueado' : '' ?>">
                             <iframe src="<?= htmlspecialchars($embed_url) ?>" 
                                     title="<?= htmlspecialchars($contenido['Titulo'] ?? 'Video de YouTube') ?>" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -251,29 +294,36 @@ function formatFileSize($bytes) {
                         </div>
                     <?php else: ?>
                         <div class="mt-2">
-                            <a href="<?= htmlspecialchars($contenido['Archivo']) ?>" 
-                               class="btn btn-sm btn-outline-primary" 
-                               target="_blank">
-                                <i class="fas fa-external-link-alt me-1"></i> Abrir enlace
-                            </a>
-                            <small class="text-muted ms-2"><?= parse_url($contenido['Archivo'], PHP_URL_HOST) ?></small>
+                            <?php if ($bloqueado_para_estudiante): ?>
+                                <span class="text-muted"><i class="fas fa-lock me-1"></i> Enlace bloqueado</span>
+                            <?php else: ?>
+                                <a href="<?= htmlspecialchars($contenido['Archivo']) ?>" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   target="_blank">
+                                    <i class="fas fa-external-link-alt me-1"></i> Abrir enlace
+                                </a>
+                                <small class="text-muted ms-2"><?= parse_url($contenido['Archivo'], PHP_URL_HOST) ?></small>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
 
-                 
                 <?php
                 $stmt_cuestionario = $conexion->prepare("SELECT ID, Titulo FROM Cuestionarios WHERE IDContenido = ?");
                 $stmt_cuestionario->execute([$contenido['ID']]);
                 $cuestionario = $stmt_cuestionario->fetch(PDO::FETCH_ASSOC);
                 
                 if ($cuestionario): ?>
-                <h5 class="">Cuestionario:</h5>
+                    <h5 class="mt-3">Cuestionario:</h5>
                     <div class="mt-2 d-flex gap-2 flex-wrap">
-                        <a href="Cuestionarios/cuestionario.php?cuestionario_id=<?= $cuestionario['ID'] ?>" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-question-circle"></i> <?= htmlspecialchars($cuestionario['Titulo']) ?>
-                        </a>
-                        <?php if ($esProfesor): ?>
+                        <?php if ($bloqueado_para_estudiante): ?>
+                            <span class="text-muted"><i class="fas fa-lock me-1"></i> Cuestionario bloqueado</span>
+                        <?php else: ?>
+                            <a href="Cuestionarios/cuestionario.php?cuestionario_id=<?= $cuestionario['ID'] ?>" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-question-circle"></i> <?= htmlspecialchars($cuestionario['Titulo']) ?>
+                            </a>
+                        <?php endif; ?>
+                        <?php if ($es_editor): ?>
                             <a href="Cuestionarios/editar_cuestionario.php?cuestionario_id=<?= $cuestionario['ID'] ?>" class="btn btn-outline-warning btn-sm">
                                 <i class="bi bi-pencil"></i> Editar
                             </a>
@@ -281,13 +331,14 @@ function formatFileSize($bytes) {
                                 <i class="bi bi-list-ul"></i> Gestionar preguntas
                             </a>
                             <a href="Cuestionarios/eliminar_cuestionario.php?id=<?= $cuestionario['ID'] ?>&id_curso=<?= $id_curso ?>" 
-                            class="btn btn-outline-danger btn-sm" 
-                            onclick="return confirm('¿Eliminar este cuestionario y todos sus datos (preguntas, intentos, respuestas)?')">
-                            <i class="bi bi-trash"></i> Eliminar</a>
+                               class="btn btn-outline-danger btn-sm" 
+                               onclick="return confirm('¿Eliminar este cuestionario y todos sus datos (preguntas, intentos, respuestas)?')">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
                         <?php endif; ?>
                     </div>
                 <?php else: ?>
-                    <?php if ($esProfesor): ?>
+                    <?php if ($es_editor): ?>
                         <div class="mt-2">
                             <a href="Cuestionarios/crear_cuestionario.php?id_contenido=<?= $contenido['ID'] ?>" class="btn btn-success btn-sm">
                                 <i class="bi bi-plus-circle"></i> Crear Cuestionario
@@ -337,6 +388,12 @@ function formatFileSize($bytes) {
         width: 100%;
         height: 100%;
         border: none;
+    }
+    .video-bloqueado {
+        pointer-events: none;
+        opacity: 0.85;
+        filter: grayscale(0.1);
+        cursor: default;
     }
     .file-download {
         transition: all 0.2s ease;

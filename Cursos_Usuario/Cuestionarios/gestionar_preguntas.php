@@ -96,6 +96,7 @@ foreach ($preguntas as &$preg) {
     $preg['Opciones'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 unset($preg);
+$cantidadPreguntas = count($preguntas);
 include("../../header.php");
 ?>
 <div class="container mt-4">
@@ -105,7 +106,7 @@ include("../../header.php");
     <?php endif; ?>
     <div class="mb-3">
         <a href="editar_cuestionario.php?cuestionario_id=<?= $cuestionario_id ?>" class="btn btn-warning">Editar Cuestionario</a>
-        <a href="../../Cursos_Usuario/contenido.php?id=<?= $cuestionario['IDCurso'] ?>" class="btn btn-secondary">Volver al Curso</a>
+        <a href="../../Cursos_Usuario/contenido.php?id=<?= $cuestionario['IDCurso'] ?>" class="btn btn-secondary" onclick="if (<?= $cantidadPreguntas ?> < 5) { alert('Debe crear mínimo 5 preguntas.'); return false; }">Volver al Curso</a>
     </div>
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">Agregar Nueva Pregunta</div>
@@ -155,7 +156,7 @@ include("../../header.php");
         <?php foreach ($preguntas as $pregunta): ?>
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span><strong>Pregunta ID <?= $pregunta['ID'] ?></strong> (<?= $pregunta['Tipo'] ?>) - Puntaje: <?= $pregunta['Puntaje'] ?></span>
+                    <span><strong></strong> (<?= $pregunta['Tipo'] ?>) - Puntaje: <?= $pregunta['Puntaje'] ?></span>
                     <div>
                         <form method="post" style="display:inline;">
                             <input type="hidden" name="accion" value="eliminar_pregunta">
@@ -223,6 +224,8 @@ include("../../header.php");
 document.addEventListener('DOMContentLoaded', function() {
     const tipoSelect = document.querySelector('select[name="Tipo"]');
     const campoVF = document.getElementById('campo_verdadero_falso');
+    const cantidadPreguntas = <?= $cantidadPreguntas ?>;
+    const requiredQuestions = 5;
 
     function toggleCampoVF() {
         if (tipoSelect.value === 'verdadero_falso') {
@@ -234,6 +237,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     tipoSelect.addEventListener('change', toggleCampoVF);
     toggleCampoVF();
+
+    const navLinks = document.querySelectorAll('header a.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.href.includes('cerrar_sesion.php') || this.href.includes('gestionar_preguntas.php') || this.href.includes('editar_cuestionario.php')) {
+                return true;
+            }
+            
+            if (cantidadPreguntas < requiredQuestions) {
+                e.preventDefault();
+                alert('Debe crear mínimo 5 preguntas antes de salir.');
+                return false;
+            }
+        });
+    });
 });
 </script>
 

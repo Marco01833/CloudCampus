@@ -2,7 +2,7 @@
 include("../../autenticacion.php");
 include("../../bd.php");
 
-define('NOTA_MINIMA', 70); // Nota mínima para aprobar (70%)
+define('NOTA_MINIMA', 70); 
 
 $curso_id = isset($_GET['id_curso']) ? (int)$_GET['id_curso'] : 0;
 if ($curso_id <= 0) {

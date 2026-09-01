@@ -1,0 +1,242 @@
+/* ============================================================
+   Punto Código — Panel admin: editar.php
+   (requiere style.css cargado antes, para heredar variables
+   --red, --ink, --surface, --border, --signal, etc.)
+   ============================================================ */
+
+.admin-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+.admin-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px -10px rgba(22, 19, 15, 0.08);
+    overflow: hidden;
+}
+
+.admin-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 1.25rem 1.75rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--ink);
+}
+
+.admin-card-header i {
+    color: var(--red);
+    font-size: 1.05rem;
+}
+
+.admin-card-body {
+    padding: 2rem 1.75rem 1.75rem;
+}
+
+/* ---------- Alertas ---------- */
+
+.alert-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.alert-box.error {
+    background: rgba(227, 30, 36, 0.08);
+    border: 1px solid rgba(227, 30, 36, 0.25);
+    color: var(--red-dark);
+}
+
+.alert-box.success {
+    background: rgba(78, 158, 82, 0.08);
+    border: 1px solid rgba(78, 158, 82, 0.28);
+    color: #3a7a3d;
+}
+
+.alert-box i:first-child {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+.alert-box span {
+    flex: 1;
+}
+
+.alert-box-close {
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.1rem;
+    flex-shrink: 0;
+}
+
+.alert-box-close:hover {
+    opacity: 1;
+}
+
+/* ---------- Formulario ---------- */
+
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.4rem;
+}
+
+.field-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.field-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.field-hint {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+/* inputs con icono (reutiliza .input-wrapper de style.css) */
+
+.input-wrapper .toggle-password {
+    position: absolute;
+    right: 0.9rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
+}
+
+.input-wrapper .toggle-password:hover {
+    color: var(--ink);
+}
+
+/* estado deshabilitado (ID, Contraseña en editar.php) */
+
+.input-wrapper.disabled input {
+    background: var(--surface);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.input-wrapper.disabled .input-icon {
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+/* selects con icono */
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.select-wrapper .select-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.select-wrapper .select-caret {
+    position: absolute;
+    right: 0.95rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    pointer-events: none;
+}
+
+.select-wrapper select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.75rem 2.3rem 0.75rem 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: "Inter", sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.select-wrapper select:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.1);
+}
+
+/* ---------- Acciones ---------- */
+
+.admin-actions {
+    display: flex;
+    gap: 0.85rem;
+    margin-top: 0.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.btn-success {
+    background: var(--signal);
+    color: #fff;
+    border-color: transparent;
+}
+
+.btn-success:hover {
+    background: #40863f;
+    transform: translateY(-1px);
+}
+
+.admin-actions .btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.75rem 1.3rem;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 560px) {
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .admin-card-body {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+}
